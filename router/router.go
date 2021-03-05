@@ -10,6 +10,8 @@ func InitRouter() *gin.Engine {
 	baseRouter := r.Group("/api/v1/base")
 	{
 		baseRouter.POST("couriers", controller.ACreateCourier)
+		baseRouter.PATCH("couriers/:id", controller.AUpdateCourier)
+		baseRouter.DELETE("couriers/:id", controller.ADeleteCourier)
 	}
 	return r
 }
