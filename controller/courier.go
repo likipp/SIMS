@@ -5,6 +5,7 @@ import (
 	"SIMS/services"
 	"SIMS/utils"
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,7 @@ func ACreateCourier(c *gin.Context) {
 }
 
 func AUpdateCourier(c *gin.Context) {
+	fmt.Println(c.Request.Method, "Request")
 	var r *models.Courier
 	_ = c.ShouldBindJSON(&r)
 	id := c.Param("id")

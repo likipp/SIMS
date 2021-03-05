@@ -24,6 +24,7 @@ func (Courier) TableName() string {
 // 查询供应商是否已经存在
 func (c *Courier) CheckCourierExist() (err error) {
 	var t Courier
+
 	if c.CName != "" {
 		hasCourier := orm.DB.Where("c_name = ?", c.CName).First(&t).Error
 		hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
@@ -67,7 +68,10 @@ func (c *Courier) BeforeUpdate(tx *gorm.DB) (err error) {
 // 更新供应商
 func (c *Courier) UpdateCourier(id int) (err error) {
 	var t Courier
-	err = c.CheckCourierExist()
+	var i Courier
+	fmt.Println(c, "Courier")
+	i.ID = id
+	err = i.CheckCourierExist()
 	if err == nil {
 		err = errors.New("供应商不存在,请先登记")
 		return err
