@@ -69,14 +69,13 @@ func (c *Courier) BeforeUpdate(tx *gorm.DB) (err error) {
 func (c *Courier) UpdateCourier(id int) (err error) {
 	var t Courier
 	var i Courier
-	fmt.Println(c, "Courier")
 	i.ID = id
 	err = i.CheckCourierExist()
 	if err == nil {
 		err = errors.New("供应商不存在,请先登记")
 		return err
 	}
-	err = orm.DB.Model(&t).Where("id = ?", id).Updates(c).Error
+	err = orm.DB.Model(&t).Where("id = ?", id).Updates(&c).Error
 	m := fmt.Sprintf("%s", err) != msg.DoNothing
 	if err != nil && m {
 		return err

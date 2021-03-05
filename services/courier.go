@@ -17,12 +17,12 @@ func SCreateCourier(c *models.Courier) (err error, cR *models.Courier) {
 	return err, c
 }
 
-func SUpdateCourier(c *models.Courier, id int) (err error, cR *models.Courier) {
+func SUpdateCourier(c *models.Courier, id int) (err error) {
 	err = c.UpdateCourier(id)
 	if err != nil {
-		return err, c
+		return err
 	}
-	return err, c
+	return err
 }
 
 func SDeleteCourier(c *models.Courier) (err error) {

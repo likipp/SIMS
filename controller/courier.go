@@ -26,11 +26,11 @@ func AUpdateCourier(c *gin.Context) {
 	var r *models.Courier
 	_ = c.ShouldBindJSON(&r)
 	id := c.Param("id")
-	err, data := services.SUpdateCourier(r, utils.StringConvInt(id))
+	err := services.SUpdateCourier(r, utils.StringConvInt(id))
 	if err != nil {
 		msg.FailWithMessage(msg.UpdatedFail, c)
 	} else {
-		msg.SuccessWithData(data, c)
+		msg.SuccessWithMessage(msg.UpdatedSuccess, c)
 	}
 }
 
