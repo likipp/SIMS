@@ -22,15 +22,14 @@ func (Courier) TableName() string {
 }
 
 // 查询供应商是否已经存在
-func (c *Courier) CheckCourierExist() (err error) {
-	var t Courier
+func (c *Courier) CheckCourierExist() (err error, t Courier) {
 
 	if c.CName != "" {
 		hasCourier := orm.DB.Where("c_name = ?", c.CName).First(&t).Error
 		hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
 		if !hasResult {
 			err = errors.New("供应商已经存在,请检查已有数据")
-			return err
+			return err, t
 		}
 	}
 
@@ -39,7 +38,7 @@ func (c *Courier) CheckCourierExist() (err error) {
 		hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
 		if !hasResult {
 			err = errors.New("供应商已经存在,请检查已有数据")
-			return err
+			return err, t
 		}
 	}
 	return
@@ -47,7 +46,7 @@ func (c *Courier) CheckCourierExist() (err error) {
 
 // 创建供应商
 func (c *Courier) CreateCourier() (err error) {
-	err = c.CheckCourierExist()
+	err, _ = c.CheckCourierExist()
 	if err != nil {
 		return err
 	}
@@ -59,7 +58,8 @@ func (c *Courier) CreateCourier() (err error) {
 }
 
 func (c *Courier) BeforeUpdate(tx *gorm.DB) (err error) {
-	if tx.Statement.Changed("c_name") {
+	fmt.Println(c, "原数据")
+	if tx.Statement.Changed("CName") {
 		return errors.New(msg.DoNothing)
 	}
 	return nil
@@ -70,13 +70,14 @@ func (c *Courier) UpdateCourier(id int) (err error) {
 	var t Courier
 	var i Courier
 	i.ID = id
-	err = i.CheckCourierExist()
+	err, t = i.CheckCourierExist()
+	fmt.Println(c, "新数据")
 	if err == nil {
 		err = errors.New("供应商不存在,请先登记")
 		return err
 	}
 	err = orm.DB.Model(&t).Where("id = ?", id).Updates(&c).Error
-	m := fmt.Sprintf("%s", err) != msg.DoNothing
+	m := fmt.Sprintf("%s", err) == msg.DoNothing
 	if err != nil && m {
 		return err
 	}
@@ -85,7 +86,7 @@ func (c *Courier) UpdateCourier(id int) (err error) {
 
 // 删除供应商
 func (c *Courier) DeleteCourier() (err error) {
-	err = c.CheckCourierExist()
+	err, _ = c.CheckCourierExist()
 	if err == nil {
 		err = errors.New("供应商不存在,请先登记")
 		return err
