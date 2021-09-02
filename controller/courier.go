@@ -6,12 +6,17 @@ import (
 	"SIMS/utils"
 	"SIMS/utils/msg"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 func ACreateCourier(c *gin.Context) {
 	var courier *models.Courier
-	var _ = c.ShouldBind(&courier)
+	var err = c.ShouldBind(&courier)
+	err, ok := err.(validator.ValidationErrors)
+	if !ok {
+		msg.Result(http.StatusBadRequest, nil, err, 0, false, c)
+	}
 	//_ = c.ShouldBindBodyWith(&courier, binding.JSON).Error()
 	err, data := services.SCreateCourier(courier)
 	if err != nil {
