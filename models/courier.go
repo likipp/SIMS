@@ -4,7 +4,6 @@ import (
 	orm "SIMS/init/database"
 	"SIMS/utils/msg"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -12,8 +11,8 @@ import (
 
 type Courier struct {
 	BaseModel
-	CName   string `gorm:"column:c_name" json:"c_name"`
-	CNumber string `gorm:"column:c_number" json:"c_number"`
+	CName   string `gorm:"column:c_name; comment:'快递名称'; not null; unique" json:"c_name"`
+	CNumber string `gorm:"column:c_number; comment:'快递编号'" json:"c_number"`
 	//Shipment
 }
 
@@ -21,14 +20,13 @@ func (Courier) TableName() string {
 	return "courier"
 }
 
-// 查询供应商是否已经存在
+// CheckCourierExist 查询快递公司是否已经存在
 func (c *Courier) CheckCourierExist() (err error, t Courier) {
-
 	if c.CName != "" {
 		hasCourier := orm.DB.Where("c_name = ?", c.CName).First(&t).Error
 		hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
 		if !hasResult {
-			err = errors.New("供应商已经存在,请检查已有数据")
+			err = errors.New("快递公司已经存在,请检查已有数据")
 			return err, t
 		}
 	}
@@ -37,14 +35,14 @@ func (c *Courier) CheckCourierExist() (err error, t Courier) {
 		hasCourier := orm.DB.Where("id = ?", c.ID).First(&t).Error
 		hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
 		if !hasResult {
-			err = errors.New("供应商已经存在,请检查已有数据")
+			err = errors.New("快递公司已经存在,请检查已有数据")
 			return err, t
 		}
 	}
 	return
 }
 
-// 创建供应商
+// CreateCourier 创建快递公司
 func (c *Courier) CreateCourier() (err error) {
 	err, _ = c.CheckCourierExist()
 	if err != nil {
@@ -57,38 +55,29 @@ func (c *Courier) CreateCourier() (err error) {
 	return err
 }
 
-func (c *Courier) BeforeUpdate(tx *gorm.DB) (err error) {
-	fmt.Println(c, "原数据")
-	if tx.Statement.Changed("CName") {
-		return errors.New(msg.DoNothing)
-	}
-	return nil
-}
-
-// 更新供应商
+// UpdateCourier 更新快递公司
 func (c *Courier) UpdateCourier(id int) (err error) {
 	var t Courier
 	var i Courier
 	i.ID = id
 	err, t = i.CheckCourierExist()
-	fmt.Println(c, "新数据")
 	if err == nil {
-		err = errors.New("供应商不存在,请先登记")
+		err = errors.New("快递公司不存在,请先登记")
 		return err
 	}
 	err = orm.DB.Model(&t).Where("id = ?", id).Updates(&c).Error
-	m := fmt.Sprintf("%s", err) == msg.DoNothing
-	if err != nil && m {
+	//m := fmt.Sprintf("%s", err) == msg.DoNothing
+	if err != nil && err == msg.DoNothing {
 		return err
 	}
 	return nil
 }
 
-// 删除供应商
+// DeleteCourier 删除快递公司
 func (c *Courier) DeleteCourier() (err error) {
 	err, _ = c.CheckCourierExist()
 	if err == nil {
-		err = errors.New("供应商不存在,请先登记")
+		err = errors.New("快递公司不存在,请先登记")
 		return err
 	}
 	err = orm.DB.Delete(&c).Error
@@ -96,4 +85,17 @@ func (c *Courier) DeleteCourier() (err error) {
 		return err
 	}
 	return err
+}
+
+//func (c *Courier) BeforeCreate(tx *gorm.DB) (err error) {
+//	if !c.IsValid() {
+//
+//	}
+//}
+
+func (c *Courier) BeforeUpdate(tx *gorm.DB) (err error) {
+	if tx.Statement.Changed("CName") {
+		return msg.DoNothing
+	}
+	return nil
 }

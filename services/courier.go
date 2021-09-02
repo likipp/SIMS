@@ -2,6 +2,7 @@ package services
 
 import (
 	"SIMS/models"
+	"SIMS/utils/msg"
 )
 
 type Courier struct {
@@ -12,9 +13,9 @@ type Courier struct {
 func SCreateCourier(c *models.Courier) (err error, cR *models.Courier) {
 	err = c.CreateCourier()
 	if err != nil {
-		return err, c
+		return msg.CreatedFail, c
 	}
-	return err, c
+	return msg.CreatedSuccess, c
 }
 
 func SUpdateCourier(c *models.Courier, id int) (err error) {

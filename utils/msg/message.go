@@ -1,13 +1,16 @@
 package msg
 
+import "errors"
+
 var (
-	CreatedSuccess = "创建成功"
-	CreatedFail    = "创建失败"
-	UpdatedSuccess = "更新成功"
-	UpdatedFail    = "更新失败"
-	DeletedSuccess = "删除成功"
-	DeletedFail    = "删除失败"
-	GetSuccess     = "查询成功"
-	NotFound       = "未找到相关内容或者数据为空"
-	TimeOut        = "操作超时"
+	CreatedSuccess = errors.New("创建成功")
+	CreatedFail    = errors.New("创建失败")
+	UpdatedSuccess = errors.New("更新成功")
+	UpdatedFail    = errors.New("更新失败")
+	DeletedSuccess = errors.New("删除成功")
+	DeletedFail    = errors.New("删除失败")
+	GetSuccess     = errors.New("查询成功")
+	NotFound       = errors.New("未找到相关内容或者数据为空")
+	TimeOut        = errors.New("操作超时")
+	DoNothing      = errors.New("数据未变更")
 )

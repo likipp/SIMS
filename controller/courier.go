@@ -5,8 +5,8 @@ import (
 	"SIMS/services"
 	"SIMS/utils"
 	"SIMS/utils/msg"
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func ACreateCourier(c *gin.Context) {
@@ -15,22 +15,21 @@ func ACreateCourier(c *gin.Context) {
 	//_ = c.ShouldBindBodyWith(&courier, binding.JSON).Error()
 	err, data := services.SCreateCourier(courier)
 	if err != nil {
-		msg.FailWithMessage(msg.CreatedFail, c)
+		msg.Result(http.StatusBadRequest, nil, err, 0, false, c)
 	} else {
-		msg.SuccessWithData(data, c)
+		msg.Result(http.StatusOK, data, err, 0, true, c)
 	}
 }
 
 func AUpdateCourier(c *gin.Context) {
-	fmt.Println(c.Request.Method, "Request")
 	var r *models.Courier
 	_ = c.ShouldBindJSON(&r)
 	id := c.Param("id")
 	err := services.SUpdateCourier(r, utils.StringConvInt(id))
 	if err != nil {
-		msg.FailWithMessage(msg.UpdatedFail, c)
+		msg.Result(http.StatusBadRequest, nil, err, 0, false, c)
 	} else {
-		msg.SuccessWithMessage(msg.UpdatedSuccess, c)
+		msg.Result(http.StatusOK, nil, err, 0, true, c)
 	}
 }
 
@@ -40,8 +39,8 @@ func ADeleteCourier(c *gin.Context) {
 	r.ID = utils.StringConvInt(id)
 	err := services.SDeleteCourier(&r)
 	if err != nil {
-		msg.Fail(c)
+		msg.Result(http.StatusBadRequest, nil, err, 0, false, c)
 	} else {
-		msg.Success(c)
+		msg.Result(http.StatusOK, nil, err, 0, true, c)
 	}
 }
