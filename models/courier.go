@@ -11,8 +11,8 @@ import (
 
 type Courier struct {
 	BaseModel
-	CName   string `gorm:"column:c_name; comment:'快递名称'; not null; unique" json:"c_name" bind:"required"`
-	CNumber string `gorm:"column:c_number; comment:'快递编号'" json:"c_number"`
+	CName   string `gorm:"column:c_name; comment:快递名称; not null; unique" json:"c_name" binding:"required"`
+	CNumber string `gorm:"column:c_number; comment:快递编号" json:"c_number"`
 	//Shipment
 }
 
@@ -22,24 +22,12 @@ func (Courier) TableName() string {
 
 // CheckCourierExist 查询快递公司是否已经存在
 func (c *Courier) CheckCourierExist() (err error, t Courier) {
-	//if c.CName != "" {
-	//
-	//}
-
 	hasCourier := global.GDB.Where("c_name = ?", c.CName).First(&t).Error
 	hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
 	if !hasResult {
 		err = errors.New("快递公司已经存在,请检查已有数据")
 		return err, t
 	}
-	//if c.ID > 0 {
-	//	hasCourier := global.GDB.Where("id = ?", c.ID).First(&t).Error
-	//	hasResult := errors.Is(hasCourier, gorm.ErrRecordNotFound)
-	//	if !hasResult {
-	//		err = errors.New("快递公司已经存在,请检查已有数据")
-	//		return err, t
-	//	}
-	//}
 	return
 }
 

@@ -13,7 +13,7 @@ type Courier struct {
 func SCreateCourier(c *models.Courier) (err error, cR *models.Courier) {
 	err = c.CreateCourier()
 	if err != nil {
-		return msg.CreatedFail, c
+		return err, c
 	}
 	return msg.CreatedSuccess, c
 }

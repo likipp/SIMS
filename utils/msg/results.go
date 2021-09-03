@@ -17,7 +17,7 @@ import (
 type Response struct {
 	ErrorCode    int         `json:"errorCode"`
 	Success      bool        `json:"success"`
-	ErrorMessage error       `json:"errorMessage"`
+	ErrorMessage string      `json:"errorMessage"`
 	Timestamp    int64       `json:"timestamp"`
 	ShowType     int         `json:"showType"`
 	Data         interface{} `json:"data"`
@@ -31,20 +31,27 @@ type PageInfo struct {
 	PageSize int   `json:"pageSize"`
 }
 
-func (r *Response) Error() string {
-	return r.ErrorMessage.Error()
-}
+//func (r *Response) Error() string {
+//	return r.ErrorMessage.Error()
+//}
 
-func Result(code int, data interface{}, msg error, showType int, success bool, c *gin.Context) {
-	c.JSON(code, &Response{
-		ErrorCode:    code,
-		Success:      success,
-		ErrorMessage: msg,
+func Result(data interface{}, msg error, showType int, success bool, c *gin.Context) {
+	var r = &Response{
+		ErrorCode:    http.StatusBadRequest,
+		Success:      false,
+		ErrorMessage: msg.Error(),
 		ShowType:     showType,
 		Timestamp:    time.Now().Unix(),
-		Data:         data,
+		Data:         nil,
 		Host:         c.ClientIP(),
-	})
+	}
+	if success {
+		r.Success = true
+		r.ErrorCode = http.StatusOK
+		c.JSON(http.StatusOK, r)
+	}
+	r.Data = data
+	c.JSON(http.StatusBadRequest, r)
 }
 
 func ResultWithPageInfo(data interface{}, msg error, showType int, success bool, total int64, page, size int, c *gin.Context) {
@@ -52,7 +59,7 @@ func ResultWithPageInfo(data interface{}, msg error, showType int, success bool,
 		Response: Response{
 			ErrorCode:    http.StatusOK,
 			Success:      success,
-			ErrorMessage: msg,
+			ErrorMessage: msg.Error(),
 			ShowType:     showType,
 			Timestamp:    time.Now().Unix(),
 			Data:         data,
