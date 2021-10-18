@@ -6,18 +6,10 @@ import (
 	"time"
 )
 
-//type Response struct {
-//	Code        int           `json:"code"`
-//	Success     bool          `json:"success"`
-//	Msg         string        `json:"msg"`
-//	Timestamp   int64         `json:"timestamp"`
-//	Result      interface{}   `json:"result"`
-//}
-
 type Response struct {
 	ErrorCode    int         `json:"errorCode"`
 	Success      bool        `json:"success"`
-	ErrorMessage string      `json:"errorMessage"`
+	ErrorMessage error       `json:"errorMessage"`
 	Timestamp    int64       `json:"timestamp"`
 	ShowType     int         `json:"showType"`
 	Data         interface{} `json:"data"`
@@ -31,15 +23,11 @@ type PageInfo struct {
 	PageSize int   `json:"pageSize"`
 }
 
-//func (r *Response) Error() string {
-//	return r.ErrorMessage.Error()
-//}
-
 func Result(data interface{}, msg error, showType int, success bool, c *gin.Context) {
 	var r = &Response{
 		ErrorCode:    http.StatusBadRequest,
 		Success:      false,
-		ErrorMessage: msg.Error(),
+		ErrorMessage: msg,
 		ShowType:     showType,
 		Timestamp:    time.Now().Unix(),
 		Data:         nil,
@@ -59,7 +47,7 @@ func ResultWithPageInfo(data interface{}, msg error, showType int, success bool,
 		Response: Response{
 			ErrorCode:    http.StatusOK,
 			Success:      success,
-			ErrorMessage: msg.Error(),
+			ErrorMessage: msg,
 			ShowType:     showType,
 			Timestamp:    time.Now().Unix(),
 			Data:         data,

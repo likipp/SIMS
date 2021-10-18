@@ -9,5 +9,7 @@ func InitTableStruct(db *gorm.DB) {
 	_ = db.AutoMigrate(
 		models.Products{},
 		models.Courier{},
+		models.CustomLevel{},
+		models.Custom{},
 	)
 }

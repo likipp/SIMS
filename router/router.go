@@ -12,6 +12,8 @@ func InitRouter() *gin.Engine {
 		baseRouter.POST("couriers", controller.ACreateCourier)
 		baseRouter.PATCH("couriers/:id", controller.AUpdateCourier)
 		baseRouter.DELETE("couriers/:id", controller.ADeleteCourier)
+		baseRouter.POST("custom-level", controller.CCreateCustomLevel)
+		baseRouter.GET("custom-level", controller.GetList)
 	}
 	return r
 }
