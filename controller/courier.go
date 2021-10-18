@@ -18,16 +18,16 @@ func ACreateCourier(c *gin.Context) {
 	err, ok := err.(validator.ValidationErrors)
 	fmt.Println(err == nil, "错误信息", ok, err)
 	if !ok {
-		msg.Result(nil, err, 0, false, c)
+		msg.Result(nil, err.Error(), 0, false, c)
 		return
 	}
 	//_ = c.ShouldBindBodyWith(&courier, binding.JSON).Error()
 	err, data := services.SCreateCourier(courier)
 	if err != nil {
-		msg.Result(nil, err, 0, false, c)
+		msg.Result(nil, err.Error(), 0, false, c)
 		return
 	}
-	msg.Result(data, err, 0, true, c)
+	msg.Result(data, err.Error(), 0, true, c)
 }
 
 func AUpdateCourier(c *gin.Context) {
@@ -36,9 +36,9 @@ func AUpdateCourier(c *gin.Context) {
 	id := c.Param("id")
 	err := services.SUpdateCourier(r, utils.StringConvInt(id))
 	if err != nil {
-		msg.Result(nil, err, 0, false, c)
+		msg.Result(nil, err.Error(), 0, false, c)
 	} else {
-		msg.Result(nil, err, 0, true, c)
+		msg.Result(nil, err.Error(), 0, true, c)
 	}
 }
 
@@ -48,8 +48,8 @@ func ADeleteCourier(c *gin.Context) {
 	r.ID = utils.StringConvInt(id)
 	err := services.SDeleteCourier(&r)
 	if err != nil {
-		msg.Result(nil, err, 0, false, c)
+		msg.Result(nil, err.Error(), 0, false, c)
 	} else {
-		msg.Result(nil, err, 0, true, c)
+		msg.Result(nil, err.Error(), 0, true, c)
 	}
 }

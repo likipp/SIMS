@@ -10,16 +10,18 @@ const (
 	UserIDKey = "/user-id"
 )
 
-func Parse(c *gin.Context, obj interface{}) {
-	if err := c.ShouldBind(&obj); err != nil {
-		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
+func Parse(c *gin.Context, obj interface{}) error {
+	if err := c.ShouldBind(obj); err != nil {
+		return msg.QueryParamsFail
 	}
+	return nil
 }
 
-func ParseJSON(c *gin.Context, obj interface{}) {
-	if err := c.ShouldBindJSON(obj); err != nil {
-		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
+func ParseJSON(c *gin.Context, obj interface{}) error {
+	if err := c.ShouldBindJSON(&obj); err != nil {
+		return msg.QueryParamsFail
 	}
+	return nil
 }
 
 func ParseQuery(c *gin.Context, obj interface{}) error {
@@ -31,9 +33,9 @@ func ParseQuery(c *gin.Context, obj interface{}) error {
 
 func ParseForm(c *gin.Context, obj interface{}) {
 	if err := c.ShouldBindWith(obj, binding.Form); err != nil {
-		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
+		msg.Result(nil, msg.QueryParamsFail.Error(), 1, false, c)
 	}
-	msg.Result(nil, msg.GetSuccess, 1, true, c)
+	msg.Result(nil, msg.GetSuccess.Error(), 1, true, c)
 }
 
 func GetUserID(c *gin.Context) string {

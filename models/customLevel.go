@@ -43,7 +43,7 @@ func (c *CustomLevel) CreateCustomLevel() (err error) {
 	}
 	err = global.GDB.Create(c).Error
 	if err != nil {
-		return
+		return msg.CreatedFail
 	}
 	return err
 }

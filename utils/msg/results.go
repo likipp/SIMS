@@ -9,7 +9,7 @@ import (
 type Response struct {
 	ErrorCode    int         `json:"errorCode"`
 	Success      bool        `json:"success"`
-	ErrorMessage error       `json:"errorMessage"`
+	ErrorMessage string      `json:"errorMessage"`
 	Timestamp    int64       `json:"timestamp"`
 	ShowType     int         `json:"showType"`
 	Data         interface{} `json:"data"`
@@ -23,7 +23,7 @@ type PageInfo struct {
 	PageSize int   `json:"pageSize"`
 }
 
-func Result(data interface{}, msg error, showType int, success bool, c *gin.Context) {
+func Result(data interface{}, msg string, showType int, success bool, c *gin.Context) {
 	var r = &Response{
 		ErrorCode:    http.StatusBadRequest,
 		Success:      false,
@@ -42,7 +42,7 @@ func Result(data interface{}, msg error, showType int, success bool, c *gin.Cont
 	c.JSON(http.StatusBadRequest, r)
 }
 
-func ResultWithPageInfo(data interface{}, msg error, showType int, success bool, total int64, page, size int, c *gin.Context) {
+func ResultWithPageInfo(data interface{}, msg string, showType int, success bool, total int64, page, size int, c *gin.Context) {
 	c.JSON(http.StatusOK, &PageInfo{
 		Response: Response{
 			ErrorCode:    http.StatusOK,
