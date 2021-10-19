@@ -14,27 +14,28 @@ func CCreateCustomLevel(c *gin.Context) {
 	err := c.BindJSON(&customLevel)
 	err, ok := err.(validator.ValidationErrors)
 	if !ok {
-		msg.Result(nil, err.Error(), 0, false, c)
+		msg.Result(nil, err, 0, false, c)
 		return
 	}
 	err, data := services.SCreateCustomLevel(customLevel)
 	if err != nil {
-		msg.Result(nil, err.Error(), 0, false, c)
+		msg.Result(nil, err, 0, false, c)
 		//return
 	}
-	msg.Result(data, err.Error(), 0, true, c)
+	msg.Result(data, err, 0, true, c)
 }
 
-func GetList(c *gin.Context) {
-	var params models.QueryParams
+func GetCustomLevelList(c *gin.Context) {
+	var params models.CustomLevelQueryParams
 	err := gins.ParseQuery(c, &params)
 	if err != nil {
-		msg.Result(nil, err.Error(), 1, false, c)
+		msg.Result(nil, err, 1, false, c)
+		return
 	}
-	err, list, total := new(models.CustomLevel).GetCustomLevel(params)
-	if err != nil {
-		msg.Result(nil, err.Error(), 1, false, c)
-	} else {
-		msg.ResultWithPageInfo(list, err.Error(), 1, true, total, params.Current, params.PageSize, c)
+	success, err, list, total := new(models.CustomLevel).GetList(params)
+	if !success {
+		msg.Result(nil, err, 1, success, c)
+		return
 	}
+	msg.ResultWithPageInfo(list, err, 1, success, total, params.Current, params.PageSize, c)
 }

@@ -10,6 +10,10 @@ const (
 	UserIDKey = "/user-id"
 )
 
+type PageList interface {
+	GetList(interface{}) (error, []interface{}, int64)
+}
+
 func Parse(c *gin.Context, obj interface{}) error {
 	if err := c.ShouldBind(obj); err != nil {
 		return msg.QueryParamsFail
@@ -33,9 +37,9 @@ func ParseQuery(c *gin.Context, obj interface{}) error {
 
 func ParseForm(c *gin.Context, obj interface{}) {
 	if err := c.ShouldBindWith(obj, binding.Form); err != nil {
-		msg.Result(nil, msg.QueryParamsFail.Error(), 1, false, c)
+		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
 	}
-	msg.Result(nil, msg.GetSuccess.Error(), 1, true, c)
+	msg.Result(nil, msg.GetSuccess, 1, true, c)
 }
 
 func GetUserID(c *gin.Context) string {

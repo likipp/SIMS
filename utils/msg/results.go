@@ -23,11 +23,11 @@ type PageInfo struct {
 	PageSize int   `json:"pageSize"`
 }
 
-func Result(data interface{}, msg string, showType int, success bool, c *gin.Context) {
+func Result(data interface{}, msg error, showType int, success bool, c *gin.Context) {
 	var r = &Response{
 		ErrorCode:    http.StatusBadRequest,
 		Success:      false,
-		ErrorMessage: msg,
+		ErrorMessage: msg.Error(),
 		ShowType:     showType,
 		Timestamp:    time.Now().Unix(),
 		Data:         nil,
@@ -42,12 +42,12 @@ func Result(data interface{}, msg string, showType int, success bool, c *gin.Con
 	c.JSON(http.StatusBadRequest, r)
 }
 
-func ResultWithPageInfo(data interface{}, msg string, showType int, success bool, total int64, page, size int, c *gin.Context) {
+func ResultWithPageInfo(data interface{}, msg error, showType int, success bool, total int64, page, size int, c *gin.Context) {
 	c.JSON(http.StatusOK, &PageInfo{
 		Response: Response{
 			ErrorCode:    http.StatusOK,
 			Success:      success,
-			ErrorMessage: msg,
+			ErrorMessage: msg.Error(),
 			ShowType:     showType,
 			Timestamp:    time.Now().Unix(),
 			Data:         data,
