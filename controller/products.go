@@ -9,20 +9,19 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-func CCreateWareHouse(c *gin.Context) {
-	var wareHouse *models.WareHouse
-	err := gins.ParseJSON(c, &wareHouse)
+func CCreateProduct(c *gin.Context) {
+	var product *models.Products
+	err := gins.ParseJSON(c, &product)
 	if err != nil {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	//err = validation.Validate(wareHouse, validation.NotNil)
-	err = validation.Validate(wareHouse, validation.NotNil)
+	err = validation.Validate(product, validation.NotNil)
 	if err != nil {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	err, data, success := services.SCreateWareHouse(wareHouse)
+	err, data, success := services.SCreateProduct(product)
 	if success {
 		msg.Result(data, err, 1, true, c)
 		return

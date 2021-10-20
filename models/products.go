@@ -1,28 +1,47 @@
 package models
 
 import (
+	"SIMS/global"
 	"SIMS/internal/entity"
+	"SIMS/utils/msg"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"gorm.io/gorm"
 )
 
 type Products struct {
 	BaseModel
-	PName     string      `json:"p_name" gorm:"comment:'产品名称'"`
-	PNumber   string      `gorm:"index not null; comment:'产品编号'" json:"p_number"`
-	Spec      string      `json:"p_spec" gorm:"comment:'规格型号'"`
-	Price     string      `json:"p_price" gorm:"comment:'单价'"`
-	Brand     int         `json:"brand" gorm:"comment:'品牌'"`
-	WareHouse []WareHouse `json:"ware_house" gorm:"comment:'仓库';many2many:products_warehouse;foreignKey:Refer"`
-	Refer     int         `gorm:"index:,unique"`
-	Mark      string      `gorm:"comment:'备注'"`
-	Picture   string      `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
+	PName   string `json:"p_name" gorm:"comment:'产品名称'"`
+	PNumber string `gorm:"index not null; comment:'产品编号'" json:"p_number"`
+	Spec    string `json:"p_spec" gorm:"comment:'规格型号'"`
+	Price   int    `json:"p_price" gorm:"comment:'单价'"`
+	Brand   int    `json:"brand" gorm:"comment:'品牌'"`
+	//WareHouse []WareHouse `json:"ware_house" gorm:"comment:'仓库';many2many:products_warehouse;foreignKey:Refer"`
+	//Refer     int         `gorm:"index:,unique"`
+	WareHouse int    `json:"ware_house" gorm:"comment:'默认仓库'"`
+	Mark      string `gorm:"comment:'备注'"`
+	Picture   string `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
 }
 
-func GetProductsDB(db *gorm.DB) *gorm.DB {
-	return entity.GetDBWithModel(db, new(Products))
+func (p *Products) Validate() error {
+	//validation.Min(1), validation.In(is.Float, is.Int),
+	err := validation.ValidateStruct(p,
+		validation.Field(&p.PName, validation.Required.Error("产品名称不能为空")),
+		validation.Field(&p.Brand, validation.Required.Error("品牌不能为空")),
+		validation.Field(&p.Price, validation.Min(1).Error("单价必须大于1"), validation.Required.Error("单价不能为空")),
+	)
+	return err
 }
 
-func (c *Products) CreateProducts() (err error) {
-	//
-	return nil
+func GetProductsDB() *gorm.DB {
+	return entity.GetDBWithModel(global.GDB, new(Products))
+}
+
+func (p *Products) CreateProducts() (err error, success bool) {
+	db := GetProductsDB()
+	err = entity.CheckExist(db, "p_name", p.PName)
+	err = db.Create(p).Error
+	if err != nil {
+		return msg.CreatedFail, false
+	}
+	return msg.CreatedSuccess, true
 }

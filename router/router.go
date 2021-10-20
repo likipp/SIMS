@@ -26,7 +26,10 @@ func InitRouter() *gin.Engine {
 		baseRouter.POST("brand", controller.CCreateBrand)
 
 		// 仓库路由
-		baseRouter.POST("warehouse", controller.CCreateWareHouse)
+		baseRouter.POST("warehouse/", controller.CCreateWareHouse)
+
+		//
+		baseRouter.POST("product/", controller.CCreateProduct)
 	}
 	return r
 }

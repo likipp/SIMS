@@ -5,18 +5,14 @@ import (
 	"SIMS/services"
 	"SIMS/utils"
 	"SIMS/utils/msg"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
 func ACreateCourier(c *gin.Context) {
 	var courier *models.Courier
-	//var err = c.ShouldBind(&courier)
 	err := c.BindJSON(&courier)
-	fmt.Println(&courier, "供应商信息", err)
 	err, ok := err.(validator.ValidationErrors)
-	fmt.Println(err == nil, "错误信息", ok, err)
 	if !ok {
 		msg.Result(nil, err, 0, false, c)
 		return
