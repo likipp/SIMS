@@ -36,9 +36,10 @@ func Result(data interface{}, msg error, showType int, success bool, c *gin.Cont
 	if success {
 		r.Success = true
 		r.ErrorCode = http.StatusOK
+		r.Data = data
 		c.JSON(http.StatusOK, r)
+		return
 	}
-	r.Data = data
 	c.JSON(http.StatusBadRequest, r)
 }
 

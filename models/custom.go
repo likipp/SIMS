@@ -20,6 +20,18 @@ type Custom struct {
 	Mark     string `json:"mark"      gorm:"comment:'备注'"`
 }
 
+type CustomWithLevel struct {
+	BaseModel
+	CName     string `json:"c_name"`
+	CNumber   string `json:"c_number"`
+	Phone     string `json:"phone"`
+	Address   string `json:"address"`
+	Discount  int    `json:"discount"`
+	LevelID   int    `json:"level_id"`
+	LevelName string `json:"level_name"`
+	Mark      string `json:"mark"`
+}
+
 type CustomQueryParams struct {
 	schema.PaginationParam
 	Name string `form:"name"`
@@ -42,12 +54,16 @@ func (c *Custom) CreateCustom() (err error) {
 	return nil
 }
 
-func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, List []Custom, total int64) {
+func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, List []CustomWithLevel, total int64) {
+	var selectData = "customs.c_name, customs.c_number, customs.phone, customs.address, customs.discount, customs.created_at, customs.create_by, custom_levels.discount, custom_levels.id as level_id,  custom_levels.name as level_name"
+	var joinData = "join custom_levels on customs.level = custom_levels.id"
 	db := GetCustomDB()
+
 	if v := params.Name; v != "" {
-		db = db.Preload("CustomLevel").Where("name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Find(&List)
+		db = db.Select(selectData).Joins(joinData).Where("name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Find(&List)
 	} else {
-		db = db.Preload("Level").Find(&List)
+		db.Select(selectData).Joins(joinData).Find(&List)
+
 	}
 	err = schema.QueryPaging(params.PaginationParam)
 	if err != nil {

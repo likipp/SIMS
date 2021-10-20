@@ -27,12 +27,12 @@ func GetCustomLevelDB(db *gorm.DB) *gorm.DB {
 }
 
 func (c *CustomLevel) CreateCustomLevel() (err error) {
-	db := entity.GetDBWithModel(global.GDB, new(CustomLevel))
+	db := GetCustomLevelDB(global.GDB)
 	err = entity.CheckExist(db, "name", c.Name)
 	if err != nil {
 		return err
 	}
-	err = global.GDB.Create(c).Error
+	err = db.Create(c).Error
 	if err != nil {
 		return msg.CreatedFail
 	}
