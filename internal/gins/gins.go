@@ -2,6 +2,7 @@ package gins
 
 import (
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -28,6 +29,15 @@ func ParseJSON(c *gin.Context, obj interface{}) error {
 	return nil
 }
 
+func ParseJSONWithPath(c *gin.Context, obj interface{}) error {
+	fmt.Println(c.FullPath(), "fullPath")
+	fmt.Println(c.Request.URL, "URL")
+	if err := c.ShouldBindJSON(&obj); err != nil {
+		return msg.QueryParamsFail
+	}
+	return nil
+}
+
 func ParseQuery(c *gin.Context, obj interface{}) error {
 	if err := c.ShouldBindQuery(obj); err != nil {
 		return msg.QueryParamsFail
@@ -40,6 +50,13 @@ func ParseForm(c *gin.Context, obj interface{}) {
 		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
 	}
 	msg.Result(nil, msg.GetSuccess, 1, true, c)
+}
+
+func ParamQuery(c *gin.Context) (err error, action string) {
+	if action = c.Param("action"); action == "" {
+		return msg.QueryParamsFail, ""
+	}
+	return nil, action
 }
 
 func GetUserID(c *gin.Context) string {

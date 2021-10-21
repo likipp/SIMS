@@ -28,8 +28,12 @@ func InitRouter() *gin.Engine {
 		// 仓库路由
 		baseRouter.POST("warehouse/", controller.CCreateWareHouse)
 
-		//
+		// 产品路由
 		baseRouter.POST("product/", controller.CCreateProduct)
+
+		// 库存路由
+		baseRouter.POST("stock/", controller.CStockCount)
+		//baseRouter.POST("stock/:action/", controller.CInStock)
 	}
 	return r
 }
