@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -19,4 +20,15 @@ func StringConvInt(str string) (int int) {
 func StringConvJoin(f, l string) (s string) {
 	s = strings.Join([]string{f, l}, "/")
 	return s
+}
+
+func IntConvJoin(s string) string {
+	var newNumStr string
+	lastNumber := StringConvInt(s)
+	newNumber := lastNumber + 1
+	if newNumber < 10 {
+		newNumStr = fmt.Sprintf("%s%d", "0", newNumber)
+	}
+	newNumStr = strconv.Itoa(newNumber)
+	return newNumStr
 }

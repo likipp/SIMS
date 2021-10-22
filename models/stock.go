@@ -42,7 +42,7 @@ func GetWareHouseQtyWithProduct(wareHouse int , product string) (*Stock, bool) {
 	if  count > 0 {
 		return &stock, true
 	}
-	return nil, false
+	return &stock, false
 }
 
 //func (s *Stock) InStock() (err error, success bool) {
