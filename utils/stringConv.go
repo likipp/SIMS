@@ -28,6 +28,7 @@ func IntConvJoin(s string) string {
 	newNumber := lastNumber + 1
 	if newNumber < 10 {
 		newNumStr = fmt.Sprintf("%s%d", "0", newNumber)
+		return newNumStr
 	}
 	newNumStr = strconv.Itoa(newNumber)
 	return newNumStr

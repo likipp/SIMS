@@ -12,15 +12,15 @@ import (
 
 type StockCount struct {
 	BaseModel
-	PNumber         string       `json:"p_number" gorm:"comment:'产品代码'"`
-	PName           string       `json:"p_name" gorm:"comment:'产品名称'"`
-	ExQTY           int          `json:"ex_qty" gorm:"comment:'出库数量'"`
-	InQTY           int          `json:"in_qty" gorm:"comment:'入库数量'"`
-	WareHouse       int          `json:"ware_house" gorm:"comment:'仓库'"`
-	StockType       string       `json:"type" gorm:"comment:'单据类型'"`
-	Number          string       `json:"number" gorm:"comment:'单号'"`
-	Custom          int          `json:"custom" gorm:"comment:'客户'"`
-	Courier         int          `json:"courier" gorm:"comment:'供应商'"`
+	PNumber   string `json:"p_number" gorm:"comment:'产品代码'"`
+	PName     string `json:"p_name" gorm:"comment:'产品名称'"`
+	ExQTY     int    `json:"ex_qty" gorm:"comment:'出库数量'"`
+	InQTY     int    `json:"in_qty" gorm:"comment:'入库数量'"`
+	WareHouse int    `json:"ware_house" gorm:"comment:'仓库'"`
+	StockType string `json:"type" gorm:"comment:'单据类型'"`
+	Number    string `json:"number" gorm:"comment:'单号'"`
+	Custom    int    `json:"custom" gorm:"comment:'客户'"`
+	Courier   int    `json:"courier" gorm:"comment:'供应商'"`
 }
 
 func (s *StockCount) Validate() error {
@@ -33,7 +33,7 @@ func (s *StockCount) Validate() error {
 		validation.Field(&s.ExQTY, validation.When(s.StockType != global.In, validation.Required.Error("数量不能为空"))),
 		validation.Field(&s.Custom, validation.When(s.StockType == global.In, validation.Required.Error("供应商不能为空"))),
 		validation.Field(&s.Courier, validation.When(s.StockType != global.In, validation.Required.Error("客户不能为空"))),
-		)
+	)
 	return err
 }
 
@@ -49,12 +49,7 @@ func (s *StockCount) StockCount() (err error, success bool) {
 			if err != nil {
 				return msg.UpdatedFail, false
 			}
-			//err = global.GDB.Create(&s).Error
-			//if err != nil {
-			//	return msg.UpdatedFail, false
-			//}
-			//return msg.UpdatedSuccess, true
-			 return s.StockLog()
+			return s.StockLog()
 		}
 		stock.QTY = s.InQTY + stock.QTY
 		err = global.GDB.Model(stock).Update("qty", stock.QTY).Error
@@ -86,7 +81,6 @@ func (s *StockCount) StockLog() (m error, success bool) {
 	}
 	return msg.UpdatedSuccess, true
 }
-
 
 func Number(t string) (n string) {
 	var s StockCount

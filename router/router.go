@@ -33,7 +33,8 @@ func InitRouter() *gin.Engine {
 
 		// 库存路由
 		baseRouter.POST("stock/", controller.CStockCount)
-		//baseRouter.POST("stock/:action/", controller.CInStock)
+		baseRouter.POST("stocks/", controller.CStockHeader)
+		//baseRouter.POST("stock/:action/", controller.CInStock) CStockHeader
 	}
 	return r
 }

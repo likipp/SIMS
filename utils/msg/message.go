@@ -17,4 +17,5 @@ var (
 	DoNothing       = errors.New("数据未变更")
 	DuplicatedData  = errors.New("数据重复, 请检查已有数据")
 	ExGTStock       = errors.New("出库数量大于实际库存")
+	Copier          = errors.New("copier复制失败")
 )
