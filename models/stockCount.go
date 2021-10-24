@@ -38,8 +38,8 @@ func (s *StockCount) Validate() error {
 }
 
 func (s *StockCount) StockCount() (err error, success bool) {
-	stock, ok := GetWareHouseQtyWithProduct(s.WareHouse, s.PNumber)
-	if ok {
+	stock := GetWareHouseQtyWithProduct(s.WareHouse, s.PNumber)
+	if stock.QTY > 0 {
 		if s.StockType == global.Ex {
 			if stock.QTY < s.ExQTY {
 				return msg.ExGTStock, false

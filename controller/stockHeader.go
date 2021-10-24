@@ -36,6 +36,10 @@ func CStockHeader(c *gin.Context) {
 	var sb []models.StockBody
 	var sh models.StockHeader
 	var stock Stock
+	//if err, action := gins.ParamQuery(c); err != nil {
+	//	msg.Result(nil, msg.QueryParamsFail, 2, false, c)
+	//	return
+	//}
 	err := gins.ParseJSON(c, &stock)
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 2, false, c)
@@ -54,6 +58,6 @@ func CStockHeader(c *gin.Context) {
 		msg.Result(nil, msg.UpdatedSuccess, 1, true, c)
 		return
 	}
-	msg.Result(nil, msg.UpdatedFail, 1, true, c)
+	msg.Result(nil, err, 1, false, c)
 	return
 }

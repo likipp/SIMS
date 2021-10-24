@@ -1,5 +1,7 @@
 package services
 
+import "SIMS/models"
+
 //func SInStock(s *models.Stock) (err error, sR *models.Stock, success bool) {
 //	err, success = s.InStock()
 //	return err, sR, success
@@ -9,3 +11,20 @@ package services
 //	err, success = s.ExStock()
 //	return err, sR, success
 //}
+
+// SGetStockList 获取即时库存
+func SGetStockList() (err error, sR []models.Stock, success bool) {
+	err, list, success := models.GetStockList()
+	if !success {
+		return err, list, false
+	}
+	return err, list, true
+}
+
+func SChangeStock(s models.Stock, action string, qty int) (err error, success bool) {
+	err, success = s.ChangeStock(action, qty)
+	if !success {
+		return err, false
+	}
+	return err, true
+}

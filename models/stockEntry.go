@@ -1,10 +1,9 @@
 package models
 
 import (
-	"SIMS/global"
 	"SIMS/utils/msg"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/jinzhu/copier"
+	"gorm.io/gorm"
 )
 
 type StockBody struct {
@@ -32,45 +31,49 @@ func (sb *StockBody) Validate() error {
 	return err
 }
 
-func (sb *StockBody) StockBodyLog(sh StockHeader) (err error, success bool) {
-	stock, ok := GetWareHouseQtyWithProduct(sb.WareHouse, sb.PNumber)
-	if ok {
-		if sh.StockType == global.Ex {
-			if stock.QTY < sb.ExQTY {
-				return msg.ExGTStock, false
-			}
-			stock.QTY = stock.QTY - sb.ExQTY
-			err = global.GDB.Model(stock).Update("qty", stock.QTY).Error
-			if err != nil {
-				return msg.UpdatedFail, false
-			}
-			return sb.StockLog()
-		}
+func (sb *StockBody) InStockLog(tx *gorm.DB) (err error, success bool) {
+	stock := GetWareHouseQtyWithProduct(sb.WareHouse, sb.PNumber)
+	if stock.QTY > 0 {
 		stock.QTY = sb.InQTY + stock.QTY
-		err = global.GDB.Model(stock).Update("qty", stock.QTY).Error
-		if err != nil {
-			return msg.UpdatedFail, false
+		err, success = stock.UpdateStockWithTransaction(tx)
+		if !success {
+			return err, false
 		}
-		return sb.StockLog()
-	}
-	if sh.StockType == global.Ex {
-		return msg.ExGTStock, false
-	}
-	err = copier.Copy(&stock, &sb)
-	if err != nil {
-		return msg.Copier, false
+		if err = tx.Create(&sb).Error; err != nil {
+			return msg.CreatedFail, false
+		}
+		return err, true
 	}
 	stock.QTY = sb.InQTY + stock.QTY
-	err = global.GDB.Create(&stock).Error
-	if err != nil {
-		return msg.UpdatedFail, false
+	err, success = stock.CreateStockWithTransaction(tx)
+	if !success {
+		return err, false
 	}
-	return sb.StockLog()
+	if err = tx.Create(&sb).Error; err != nil {
+		return msg.CreatedFail, false
+	}
+	return msg.CreatedSuccess, true
 }
 
-func (sb *StockBody) StockLog() (m error, success bool) {
-	if err := global.GDB.Create(&sb).Error; err != nil {
-		return msg.UpdatedFail, false
+func (sb *StockBody) ExStockLog(tx *gorm.DB) (err error, success bool) {
+	stock := GetWareHouseQtyWithProduct(sb.WareHouse, sb.PNumber)
+	if stock.QTY > 0 {
+		if err, success = stock.CheckStock(sb.ExQTY); !success {
+			return err, false
+		}
+		stock.QTY = stock.QTY - sb.ExQTY
+		err, success = stock.UpdateStockWithTransaction(tx)
+		if !success {
+			return err, false
+		}
+		if err = tx.Create(&sb).Error; err != nil {
+			return msg.CreatedFail, false
+		}
+		return msg.CreatedSuccess, true
 	}
-	return msg.UpdatedSuccess, true
+	return msg.ExGTStock, false
 }
+
+//func GetStockIn() {
+//	global.GDB.Where("stock_type = ?", global.In).Find()
+//}

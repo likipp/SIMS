@@ -32,9 +32,10 @@ func InitRouter() *gin.Engine {
 		baseRouter.POST("product/", controller.CCreateProduct)
 
 		// 库存路由
-		baseRouter.POST("stock/", controller.CStockCount)
-		baseRouter.POST("stocks/", controller.CStockHeader)
-		//baseRouter.POST("stock/:action/", controller.CInStock) CStockHeader
+		//baseRouter.POST("stock/", controller.CStockCount)
+		baseRouter.POST("stock/", controller.CStockHeader)
+		baseRouter.GET("stock/", controller.CGetStockList)
+		baseRouter.POST("stock/:id", controller.CSChangeStock)
 	}
 	return r
 }
