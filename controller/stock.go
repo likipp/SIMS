@@ -69,20 +69,10 @@ func CInOrExStock(c *gin.Context) {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	if action == "in" {
-		//err, data, success := services.SInStock(stock)
-		//if success {
-		//	msg.Result(data, err, 1, true, c)
-		//	return
-		//}
+	if action == global.In {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	//err, data, success := services.SExStock(stock)
-	//if success {
-	//	msg.Result(data, err, 1, true, c)
-	//	return
-	//}
 	msg.Result(nil, err, 2, false, c)
 }
 

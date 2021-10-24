@@ -31,7 +31,7 @@ func (sh *StockHeader) Validate() error {
 }
 
 func (sh *StockHeader) StockHeaderLog(sb []StockBody) (err error, success bool) {
-	n := Number2(sh.StockType)
+	n := BillNumber(sh.StockType)
 	sh.Number = n
 	tx := global.GDB.Begin()
 	if err = tx.Create(&sh).Error; err != nil {
@@ -56,7 +56,7 @@ func (sh *StockHeader) StockHeaderLog(sb []StockBody) (err error, success bool) 
 	return err, true
 }
 
-func Number2(t string) (n string) {
+func BillNumber(t string) (n string) {
 	var s StockHeader
 	var total int64
 	var buf bytes.Buffer
