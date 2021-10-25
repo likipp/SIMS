@@ -6,6 +6,7 @@ import (
 	"SIMS/utils/msg"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Stock struct {
@@ -19,6 +20,29 @@ type Stock struct {
 type StockWithAction struct {
 	Stock
 	Action string `json:"action"`
+}
+
+type ExStock struct {
+	Number  string  `json:"number"`
+	CName   string  `json:"c_name"`
+	CreatedAt *time.Time  `json:"created_at"`
+	PayMethod string `json:"pay_method"`
+	PNumber string `json:"p_number"`
+	PName string `json:"p_name"`
+	ExQTY string `json:"ex_qty"`
+	UnitPrice int `json:"unit_price"`
+	Total int `json:"total"`
+}
+
+type InStock struct {
+	Number  string  `json:"number"`
+	CreatedAt *time.Time  `json:"created_at"`
+	PayMethod string `json:"pay_method"`
+	PNumber string `json:"p_number"`
+	PName string `json:"p_name"`
+	InQTY string `json:"in_qty"`
+	UnitPrice int `json:"unit_price"`
+	Total int `json:"total"`
 }
 
 func (s *Stock) Validate() error {
@@ -97,4 +121,22 @@ func GetStockList() (error, []Stock, bool) {
 		return msg.GetFail, ss, false
 	}
 	return msg.GetSuccess, ss, true
+}
+
+func GetExStockList() (error, []ExStock, bool) {
+	var el []ExStock
+	err := global.GDB.Select("stock_headers.number, customs.c_name, stock_headers.created_at, stock_headers.pay_method, stock_bodies.p_number, stock_bodies.p_name, stock_bodies.ex_qty, stock_bodies.unit_price, stock_bodies.total").Model(&StockHeader{}).Joins("left join stock_bodies on stock_bodies.header_id = stock_headers.id").Joins("left join customs on customs.id = stock_headers.custom").Where("stock_headers.stock_type = ?", "出库单").Find(&el).Error
+	if err != nil {
+		return msg.GetFail, el, false
+	}
+	return msg.GetSuccess, el, true
+}
+
+func GetInStockList() (error, []InStock, bool) {
+	var el []InStock
+	err := global.GDB.Select("stock_headers.number, stock_headers.created_at, stock_headers.pay_method, stock_bodies.p_number, stock_bodies.p_name, stock_bodies.in_qty, stock_bodies.unit_price, stock_bodies.total").Model(&StockHeader{}).Joins("left join stock_bodies on stock_bodies.header_id = stock_headers.id").Where("stock_headers.stock_type = ?", "入库单").Find(&el).Error
+	if err != nil {
+		return msg.GetFail, el, false
+	}
+	return msg.GetSuccess, el, true
 }

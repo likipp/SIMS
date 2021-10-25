@@ -3,6 +3,7 @@ package models
 import (
 	"SIMS/utils/msg"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
@@ -43,6 +44,10 @@ func (sb *StockBody) InStockLog(tx *gorm.DB) (err error, success bool) {
 			return msg.CreatedFail, false
 		}
 		return err, true
+	}
+	err = copier.Copy(&stock, &sb)
+	if err != nil {
+		return msg.Copier, false
 	}
 	stock.QTY = sb.InQTY + stock.QTY
 	err, success = stock.CreateStockWithTransaction(tx)

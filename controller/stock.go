@@ -104,3 +104,21 @@ func CSChangeStock(c *gin.Context) {
 	}
 	msg.Result(nil, err, 1, true, c)
 }
+
+func CGetExStockList(c *gin.Context) {
+	err, list, success := services.SGetExStockList()
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(list, err, 1, true, c)
+}
+
+func CGetInStockList(c *gin.Context) {
+	err, list, success := services.SGetInStockList()
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(list, err, 1, true, c)
+}
