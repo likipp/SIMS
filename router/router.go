@@ -36,6 +36,8 @@ func InitRouter() *gin.Engine {
 		//baseRouter.POST("stock/", controller.CStockCount)
 		baseRouter.POST("stock/", controller.CStockHeader)
 		baseRouter.GET("stock/", controller.CGetStockList)
+		baseRouter.GET("stock/ex", controller.CGetExStockList)
+		baseRouter.GET("stock/in", controller.CGetInStockList)
 		baseRouter.POST("stock/:id", controller.CSChangeStock)
 	}
 	return r

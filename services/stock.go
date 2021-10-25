@@ -28,3 +28,13 @@ func SChangeStock(s models.Stock, action string, qty int) (err error, success bo
 	}
 	return err, true
 }
+
+func SGetExStockList() (err error, list []models.ExStock, success bool) {
+	err, list, success = models.GetExStockList()
+	return err, list, true
+}
+
+func SGetInStockList() (err error, list []models.InStock, success bool) {
+	err, list, success = models.GetInStockList()
+	return err, list, true
+}
