@@ -4,6 +4,7 @@ import (
 	"SIMS/global"
 	"SIMS/internal/entity"
 	"SIMS/utils/msg"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gorm.io/gorm"
 )
@@ -20,6 +21,11 @@ type Products struct {
 	WareHouse int    `json:"ware_house" gorm:"comment:'默认仓库'"`
 	Mark      string `gorm:"comment:'备注'"`
 	Picture   string `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
+}
+
+type ProductsSelect struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
 }
 
 func (p *Products) Validate() error {
@@ -44,4 +50,21 @@ func (p *Products) CreateProducts() (err error, success bool) {
 		return msg.CreatedFail, false
 	}
 	return msg.CreatedSuccess, true
+}
+
+func GetProductsList() (err error, list []ProductsSelect, success bool) {
+	var p ProductsSelect
+	var ps []ProductsSelect
+	var psl []Products
+	db := GetProductsDB()
+	if err = db.Find(&psl).Error; err != nil {
+		return msg.GetFail, list, false
+	}
+	for _, pro := range psl {
+		p.Value = pro.PNumber
+		p.Label = pro.PName
+		ps = append(ps, p)
+	}
+	fmt.Println(ps, "ps信息")
+	return msg.GetSuccess, ps, true
 }

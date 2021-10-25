@@ -28,3 +28,13 @@ func CCreateProduct(c *gin.Context) {
 	}
 	msg.Result(nil, err, 2, false, c)
 }
+
+func CGetProductList(c *gin.Context) {
+	var products []models.ProductsSelect
+	err, products, success := services.SGetProductList()
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(products, err, 1, true, c)
+}
