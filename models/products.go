@@ -26,6 +26,7 @@ type Products struct {
 type ProductsSelect struct {
 	Value string `json:"value"`
 	Label string `json:"label"`
+	Key   string `json:"key"`
 }
 
 func (p *Products) Validate() error {
@@ -70,6 +71,7 @@ func GetProductsList(param string) (err error, list []ProductsSelect, success bo
 	for _, pro := range psl {
 		p.Value = pro.PName
 		p.Label = pro.PNumber
+		p.Key = pro.PNumber
 		ps = append(ps, p)
 	}
 	return msg.GetSuccess, ps, true

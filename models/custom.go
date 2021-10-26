@@ -40,6 +40,7 @@ type CustomQueryParams struct {
 type CustomSelect struct {
 	Value string `json:"value"`
 	Label string `json:"label"`
+	ID    int    `json:"id"`
 }
 
 func GetCustomDB() *gorm.DB {
@@ -95,6 +96,7 @@ func GetCustomsList(param string) (err error, list []CustomSelect, success bool)
 	for _, pro := range cl {
 		c.Value = pro.CName
 		c.Label = pro.CNumber
+		c.ID = pro.ID
 		cs = append(cs, c)
 	}
 	return msg.GetSuccess, cs, true
