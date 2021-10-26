@@ -5,6 +5,7 @@ import (
 	"SIMS/models"
 	"SIMS/services"
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
@@ -31,7 +32,13 @@ func CCreateProduct(c *gin.Context) {
 
 func CGetProductList(c *gin.Context) {
 	var products []models.ProductsSelect
-	err, products, success := services.SGetProductList()
+	param := c.DefaultQuery("param", "")
+	fmt.Println(param, "params", param == "")
+	//if err != nil {
+	//	msg.Result(nil, err, 2, false, c)
+	//	return
+	//}
+	err, products, success := services.SGetProductList(param)
 	if !success {
 		msg.Result(nil, err, 2, false, c)
 		return

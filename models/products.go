@@ -52,19 +52,25 @@ func (p *Products) CreateProducts() (err error, success bool) {
 	return msg.CreatedSuccess, true
 }
 
-func GetProductsList() (err error, list []ProductsSelect, success bool) {
+func GetProductsList(param string) (err error, list []ProductsSelect, success bool) {
 	var p ProductsSelect
 	var ps []ProductsSelect
 	var psl []Products
+	con := fmt.Sprintf("%s%s%s", "%", param, "%")
 	db := GetProductsDB()
+	if param != "" {
+		err = db.Where("p_name like ? or p_number like ?", con, con).Find(&psl).Error
+		if err != nil {
+			return msg.GetFail, list, false
+		}
+	}
 	if err = db.Find(&psl).Error; err != nil {
 		return msg.GetFail, list, false
 	}
 	for _, pro := range psl {
-		p.Value = pro.PNumber
-		p.Label = pro.PName
+		p.Value = pro.PName
+		p.Label = pro.PNumber
 		ps = append(ps, p)
 	}
-	fmt.Println(ps, "ps信息")
 	return msg.GetSuccess, ps, true
 }

@@ -20,7 +20,7 @@ func InitRouter() *gin.Engine {
 
 		// 客户路由
 		baseRouter.POST("custom", controller.CCreateCustom)
-		baseRouter.GET("custom/", controller.GetCustomList)
+		baseRouter.GET("custom/", controller.CGetCustomList)
 
 		// 品牌路由
 		baseRouter.POST("brand", controller.CCreateBrand)

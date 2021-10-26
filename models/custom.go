@@ -37,6 +37,11 @@ type CustomQueryParams struct {
 	Name string `form:"name"`
 }
 
+type CustomSelect struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
+}
+
 func GetCustomDB() *gorm.DB {
 	return entity.GetDBWithModel(global.GDB, new(Custom))
 }
@@ -70,4 +75,27 @@ func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, Lis
 		return false, msg.GetFail, nil, 0
 	}
 	return true, msg.GetSuccess, List, int64(len(List))
+}
+
+func GetCustomsList(param string) (err error, list []CustomSelect, success bool) {
+	var c CustomSelect
+	var cs []CustomSelect
+	var cl []Custom
+	con := fmt.Sprintf("%s%s%s", "%", param, "%")
+	db := GetCustomDB()
+	if param != "" {
+		err = db.Where("c_name like ? or c_number like ?", con, con).Find(&cl).Error
+		if err != nil {
+			return msg.GetFail, list, false
+		}
+	}
+	if err = db.Find(&cl).Error; err != nil {
+		return msg.GetFail, list, false
+	}
+	for _, pro := range cl {
+		c.Value = pro.CName
+		c.Label = pro.CNumber
+		cs = append(cs, c)
+	}
+	return msg.GetSuccess, cs, true
 }

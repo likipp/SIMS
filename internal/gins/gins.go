@@ -52,8 +52,8 @@ func ParseForm(c *gin.Context, obj interface{}) {
 	msg.Result(nil, msg.GetSuccess, 1, true, c)
 }
 
-func ParamQuery(c *gin.Context) (err error, action string) {
-	if action = c.Param("action"); action == "" {
+func ParamQuery(c *gin.Context, obj interface{}) (err error, action string) {
+	if action = c.DefaultQuery(obj.(string), "*"); action == "" {
 		return msg.QueryParamsFail, ""
 	}
 	return nil, action

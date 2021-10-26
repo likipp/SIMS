@@ -37,3 +37,15 @@ func GetCustomList(c *gin.Context) {
 	}
 	msg.ResultWithPageInfo(list, err, 1, success, total, params.Current, params.PageSize, c)
 }
+
+
+func CGetCustomList(c *gin.Context) {
+	var customs []models.CustomSelect
+	param := c.DefaultQuery("param", "")
+	err, customs, success := services.SGetCustomList(param)
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(customs, err, 1, true, c)
+}

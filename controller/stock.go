@@ -58,7 +58,7 @@ type StockChange struct {
 
 func CInOrExStock(c *gin.Context) {
 	var stock *models.Stock
-	err, action := gins.ParamQuery(c)
+	err, action := gins.ParamQuery(c, "aa")
 	err = gins.ParseJSON(c, &stock)
 	if err != nil {
 		msg.Result(nil, err, 2, false, c)
