@@ -29,3 +29,17 @@ func CCreateWareHouse(c *gin.Context) {
 	}
 	msg.Result(nil, err, 2, false, c)
 }
+
+func CWareHouseList(c *gin.Context) {
+	var products []models.WareHouseSelect
+	param := c.DefaultQuery("param", "")
+	if param == "{}" {
+		param = ""
+	}
+	err, products, success := services.SGetWareHouseList(param)
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(products, err, 1, true, c)
+}

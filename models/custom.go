@@ -38,9 +38,13 @@ type CustomQueryParams struct {
 }
 
 type CustomSelect struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-	ID    int    `json:"id"`
+	Value     string `json:"value"`
+	Label     string `json:"label"`
+	ID        int    `json:"id"`
+	Discount  int    `json:"discount"`
+	LevelName string `json:"l_name"`
+	//CName     string `json:"c_name"`
+	//CNumber   string `json:"c_number"`
 }
 
 func GetCustomDB() *gorm.DB {
@@ -79,25 +83,26 @@ func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, Lis
 }
 
 func GetCustomsList(param string) (err error, list []CustomSelect, success bool) {
-	var c CustomSelect
+	//var c CustomSelect
 	var cs []CustomSelect
-	var cl []Custom
+	//var cl []Custom
 	con := fmt.Sprintf("%s%s%s", "%", param, "%")
+	var selectData = "customs.id, customs.c_number as label, customs.c_name as value, custom_levels.name as l_name, custom_levels.discount"
+	var joinData = "join custom_levels on customs.level = custom_levels.id"
 	db := GetCustomDB()
 	if param != "" {
-		err = db.Where("c_name like ? or c_number like ?", con, con).Find(&cl).Error
+		err = db.Select(selectData).Joins(joinData).Where("customs.c_name like ? or customs.c_number like ?", con, con).Find(&cs).Error
 		if err != nil {
 			return msg.GetFail, list, false
 		}
 	}
-	if err = db.Find(&cl).Error; err != nil {
+	if err = db.Select(selectData).Joins(joinData).Find(&cs).Error; err != nil {
 		return msg.GetFail, list, false
 	}
-	for _, pro := range cl {
-		c.Value = pro.CName
-		c.Label = pro.CNumber
-		c.ID = pro.ID
-		cs = append(cs, c)
-	}
+	//for i, _ := range cs {
+	//	cs[i].Value = cs[i].CName
+	//	cs[i].Label = cs[i].CNumber
+	//
+	//}
 	return msg.GetSuccess, cs, true
 }

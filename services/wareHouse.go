@@ -6,3 +6,8 @@ func SCreateWareHouse(w *models.WareHouse) (err error, wR *models.WareHouse, suc
 	err, success = w.CreateWareHouse()
 	return err, wR, success
 }
+
+func SGetWareHouseList(param string) (err error, pr []models.WareHouseSelect, success bool) {
+	err, pr, success = models.GetWareHouseList(param)
+	return err, pr, success
+}
