@@ -7,6 +7,7 @@ import (
 
 type Config struct {
 	MysqlAdmin MySQL `json:"mysqlAdmin"`
+	Login      Login `json:"login"`
 }
 
 type MySQL struct {
@@ -15,6 +16,11 @@ type MySQL struct {
 	Path     string `json:"path"`
 	DBName   string `json:"dbname"`
 	Config   string `json:"config"`
+}
+
+type Login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 var AdminConfig Config

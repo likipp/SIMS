@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/jinzhu/copier"
 	"time"
 )
 
@@ -18,6 +19,13 @@ type StockHeader struct {
 	//Courier   int    `json:"courier" gorm:"comment:'供应商'"`
 	Discount  int    `json:"discount"  gorm:"comment:'折扣'"`
 	PayMethod string `json:"pay_method"  gorm:"comment:'收款方式'"`
+}
+
+type ExBillDetail struct {
+	Custom     string `json:"c_number"`
+	CustomName string `json:"c_name"`
+	StockHeader
+	Body []StockBody `json:"body"`
 }
 
 func (sh *StockHeader) Validate() error {
@@ -54,6 +62,32 @@ func (sh *StockHeader) StockHeaderLog(sb []StockBody) (err error, success bool) 
 	}
 	tx.Commit()
 	return err, true
+}
+
+func GetExBillDetail(number string) (error, ExBillDetail, bool) {
+	var header StockHeader
+	var body []StockBody
+	var b ExBillDetail
+	var c Custom
+	err := global.GDB.Where("number = ?", number).Find(&header).Error
+	if err != nil {
+		return msg.GetFail, b, false
+	}
+	global.GDB.Where("id = ?", header.Custom).Find(&c)
+	if err != nil {
+		return msg.GetFail, b, false
+	}
+	err = global.GDB.Where("header_id = ?", header.ID).Find(&body).Error
+	if err != nil {
+		return msg.GetFail, b, false
+	}
+	if err = copier.Copy(&b, &header); err != nil {
+		return msg.Copier, b, false
+	}
+	b.Custom = c.CNumber
+	b.CustomName = c.CName
+	b.Body = body
+	return msg.GetSuccess, b, true
 }
 
 func BillNumber(t string) (n string) {

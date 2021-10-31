@@ -4,3 +4,7 @@ mysqladmin:
   path: "nas.xiaom.work:3306"
   dbname: "sims"
   config: "charset=utf8&parseTime=True&loc=Local"
+
+login:
+  username: "admin"
+  password: "cGx5eHeDpR59zcm70uKReuoGJIhbPVlgXuO7UqWm+p4="

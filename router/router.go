@@ -9,6 +9,8 @@ func InitRouter() *gin.Engine {
 	r := gin.Default()
 	baseRouter := r.Group("/api/v1/base")
 	{
+		baseRouter.POST("login/", controller.Login)
+		baseRouter.GET("currentUser/", controller.GetCurrentUser)
 		// 供应商路由
 		baseRouter.POST("couriers", controller.ACreateCourier)
 		baseRouter.PATCH("couriers/:id", controller.AUpdateCourier)
@@ -39,7 +41,9 @@ func InitRouter() *gin.Engine {
 		baseRouter.GET("stock/", controller.CGetStockList)
 		baseRouter.GET("stock/ex", controller.CGetExStockList)
 		baseRouter.GET("stock/in", controller.CGetInStockList)
-		baseRouter.POST("stock/:id", controller.CSChangeStock)
+		baseRouter.POST("stock/:id/", controller.CSChangeStock)
+
+		baseRouter.GET("ex-bill/", controller.CGetExBillDetail)
 	}
 	return r
 }

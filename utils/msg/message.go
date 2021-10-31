@@ -18,4 +18,6 @@ var (
 	DuplicatedData  = errors.New("数据重复, 请检查已有数据")
 	ExGTStock       = errors.New("出库数量大于实际库存")
 	Copier          = errors.New("copier复制失败")
+	LoginSuccess    = errors.New("登录成功")
+	LoginFail       = errors.New("帐号密码错误")
 )

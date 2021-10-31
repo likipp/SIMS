@@ -57,3 +57,15 @@ func CStockHeader(c *gin.Context) {
 	msg.Result(nil, err, 1, false, c)
 	return
 }
+
+func CGetExBillDetail(c *gin.Context) {
+	//SGetExBillDetail
+	number := c.Query("number")
+	err, data, success := services.SGetExBillDetail(number)
+	if success {
+		msg.Result(data, msg.GetSuccess, 1, true, c)
+		return
+	}
+	msg.Result(nil, err, 1, false, c)
+	return
+}
