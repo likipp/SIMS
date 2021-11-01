@@ -7,7 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type StockBody struct {
+type BillEntry struct {
+	BaseModel
 	HeaderID  int     `json:"header_id" gorm:"comment:'表头ID'"`
 	PNumber   string  `json:"p_number" gorm:"comment:'产品代码'"`
 	PName     string  `json:"p_name" gorm:"comment:'产品名称'"`
@@ -19,59 +20,59 @@ type StockBody struct {
 	Total     float32 `json:"total" gorm:"comment:'金额'"`
 }
 
-func (sb *StockBody) Validate() error {
-	err := validation.ValidateStruct(sb,
-		validation.Field(&sb.PNumber, validation.Required.Error("产品代码不能为空")),
-		validation.Field(&sb.PName, validation.Required.Error("产品名称不能为空")),
-		validation.Field(&sb.WareHouse, validation.Required.Error("仓库不能为空")),
-		validation.Field(&sb.UnitPrice, validation.Required.Error("单价不能为空")),
-		validation.Field(&sb.Total, validation.Required.Error("金额不能为空")),
+func (be *BillEntry) Validate() error {
+	err := validation.ValidateStruct(be,
+		validation.Field(&be.PNumber, validation.Required.Error("产品代码不能为空")),
+		validation.Field(&be.PName, validation.Required.Error("产品名称不能为空")),
+		validation.Field(&be.WareHouse, validation.Required.Error("仓库不能为空")),
+		validation.Field(&be.UnitPrice, validation.Required.Error("单价不能为空")),
+		validation.Field(&be.Total, validation.Required.Error("金额不能为空")),
 		//validation.Field(&sb.InQTY, validation.When(s.StockType == global.In, validation.Required.Error("数量不能为空"))),
 		//validation.Field(&sb.ExQTY, validation.When(s.StockType != global.In, validation.Required.Error("数量不能为空"))),
 	)
 	return err
 }
 
-func (sb *StockBody) InStockLog(tx *gorm.DB) (err error, success bool) {
-	stock := GetWareHouseQtyWithProduct(sb.WareHouse, sb.PNumber)
+func (be *BillEntry) InStockLog(tx *gorm.DB) (err error, success bool) {
+	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
 	if stock.QTY > 0 {
-		stock.QTY = sb.InQTY + stock.QTY
+		stock.QTY = be.InQTY + stock.QTY
 		err, success = stock.UpdateStockWithTransaction(tx)
 		if !success {
 			return err, false
 		}
-		if err = tx.Create(&sb).Error; err != nil {
+		if err = tx.Create(&be).Error; err != nil {
 			return msg.CreatedFail, false
 		}
 		return err, true
 	}
-	err = copier.Copy(&stock, &sb)
+	err = copier.Copy(&stock, &be)
 	if err != nil {
 		return msg.Copier, false
 	}
-	stock.QTY = sb.InQTY + stock.QTY
+	stock.QTY = be.InQTY + stock.QTY
 	err, success = stock.CreateStockWithTransaction(tx)
 	if !success {
 		return err, false
 	}
-	if err = tx.Create(&sb).Error; err != nil {
+	if err = tx.Create(&be).Error; err != nil {
 		return msg.CreatedFail, false
 	}
 	return msg.CreatedSuccess, true
 }
 
-func (sb *StockBody) ExStockLog(tx *gorm.DB) (err error, success bool) {
-	stock := GetWareHouseQtyWithProduct(sb.WareHouse, sb.PNumber)
+func (be *BillEntry) ExStockLog(tx *gorm.DB) (err error, success bool) {
+	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
 	if stock.QTY > 0 {
-		if err, success = stock.CheckStock(sb.ExQTY); !success {
+		if err, success = stock.CheckStock(be.ExQTY); !success {
 			return err, false
 		}
-		stock.QTY = stock.QTY - sb.ExQTY
+		stock.QTY = stock.QTY - be.ExQTY
 		err, success = stock.UpdateStockWithTransaction(tx)
 		if !success {
 			return err, false
 		}
-		if err = tx.Create(&sb).Error; err != nil {
+		if err = tx.Create(&be).Error; err != nil {
 			return msg.CreatedFail, false
 		}
 		return msg.CreatedSuccess, true

@@ -11,3 +11,8 @@ func SGetWareHouseList(param string) (err error, pr []models.WareHouseSelect, su
 	err, pr, success = models.GetWareHouseList(param)
 	return err, pr, success
 }
+//
+//func SGetWareHouseList(param string) (err error, pr []models.WareHouseSelect, success bool) {
+//	err, pr, success = models.GetWareHouseList(param)
+//	return err, pr, success
+//}

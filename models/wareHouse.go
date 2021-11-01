@@ -44,6 +44,30 @@ func (w *WareHouse) CreateWareHouse() (err error, success bool) {
 	}
 	return msg.CreatedSuccess, true
 }
+//
+//func GetWareHouseList(param string) (err error, list []WareHouseSelect, success bool) {
+//	var w WareHouseSelect
+//	var ws []WareHouseSelect
+//	var wsl []WareHouse
+//	con := fmt.Sprintf("%s%s%s", "%", param, "%")
+//	db := GetWareHouseDB()
+//	if param != "" {
+//		err = db.Where("name like ? or number like ?", con, con).Find(&wsl).Error
+//		if err != nil {
+//			return msg.GetFail, list, false
+//		}
+//	}
+//	if err = db.Find(&wsl).Error; err != nil {
+//		return msg.GetFail, list, false
+//	}
+//	for _, pro := range wsl {
+//		w.Value = pro.Number
+//		w.Label = pro.Name
+//		w.Key = pro.Number
+//		ws = append(ws, w)
+//	}
+//	return msg.GetSuccess, ws, true
+//}
 
 func GetWareHouseList(param string) (err error, list []WareHouseSelect, success bool) {
 	//var p ProductsSelect

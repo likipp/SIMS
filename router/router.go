@@ -37,12 +37,14 @@ func InitRouter() *gin.Engine {
 
 		// 库存路由
 		//baseRouter.POST("stock/", controller.CStockCount)
+		// 获取单据编号
+		baseRouter.GET("generate-number/", controller.CGenerateNumber)
+		// 创建出入库单据
 		baseRouter.POST("stock/", controller.CStockHeader)
 		baseRouter.GET("stock/", controller.CGetStockList)
-		baseRouter.GET("stock/ex", controller.CGetExStockList)
+		baseRouter.GET("stock/ex/", controller.CGetExStockList)
 		baseRouter.GET("stock/in", controller.CGetInStockList)
 		baseRouter.POST("stock/:id/", controller.CSChangeStock)
-
 		baseRouter.GET("ex-bill/", controller.CGetExBillDetail)
 	}
 	return r

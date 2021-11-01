@@ -127,7 +127,7 @@ func GetStockList() (error, []Stock, bool) {
 
 func GetExStockList() (error, []ExStock, bool) {
 	var el []ExStock
-	err := global.GDB.Select("stock_headers.number, customs.c_name, stock_headers.created_at, stock_headers.pay_method, stock_headers.discount as h_discount, stock_bodies.p_number, stock_bodies.p_name, stock_bodies.ex_qty, stock_bodies.unit_price, stock_bodies.discount as b_discount, stock_bodies.total").Model(&StockHeader{}).Joins("left join stock_bodies on stock_bodies.header_id = stock_headers.id").Joins("left join customs on customs.id = stock_headers.custom").Where("stock_headers.stock_type = ?", "出库单").Find(&el).Error
+	err := global.GDB.Select("bill_headers.number, customs.c_name, bill_headers.created_at, bill_headers.pay_method, bill_headers.discount as h_discount, bill_entries.p_number, bill_entries.p_name, bill_entries.ex_qty, bill_entries.unit_price, bill_entries.discount as b_discount, bill_entries.total").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Joins("left join customs on customs.id = bill_headers.custom").Where("bill_headers.stock_type = ?", "出库单").Find(&el).Error
 	if err != nil {
 		return msg.GetFail, el, false
 	}
@@ -136,7 +136,7 @@ func GetExStockList() (error, []ExStock, bool) {
 
 func GetInStockList() (error, []InStock, bool) {
 	var el []InStock
-	err := global.GDB.Select("stock_headers.number, stock_headers.created_at, stock_headers.pay_method, stock_bodies.p_number, stock_bodies.p_name, stock_bodies.in_qty, stock_bodies.unit_price, stock_bodies.total").Model(&StockHeader{}).Joins("left join stock_bodies on stock_bodies.header_id = stock_headers.id").Where("stock_headers.stock_type = ?", "入库单").Find(&el).Error
+	err := global.GDB.Select("bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_entries.total").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单").Find(&el).Error
 	if err != nil {
 		return msg.GetFail, el, false
 	}

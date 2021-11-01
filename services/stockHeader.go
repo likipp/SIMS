@@ -2,8 +2,8 @@ package services
 
 import "SIMS/models"
 
-func SStockHeader(sh models.StockHeader, sb []models.StockBody) (er error, success bool) {
-	err, success := sh.StockHeaderLog(sb)
+func SStockHeader(sh models.BillHeader, sb []models.BillEntry) (er error, success bool) {
+	err, success := sh.BillLog(sb)
 	return err, success
 }
 

@@ -5,23 +5,22 @@ import (
 	"SIMS/models"
 	"SIMS/services"
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
 
-type Stock struct {
+type ExBill struct {
 	models.BaseModel
-	StockType string `json:"type"`
-	Number    string `json:"number"`
-	Custom    int    `json:"custom"`
-	//Courier         int           `json:"courier"`
-	Discount  int         `json:"discount"`
-	PayMethod string      `json:"pay_method"`
-	Body      []StockBody `json:"body"`
+	StockType     string       `json:"bill_type"`
+	Number    string       `json:"bill_number"`
+	Custom        int          `json:"custom"`
+	Discount      int          `json:"discount"`
+	PayMethod     string       `json:"pay_method"`
+	Body          []StockBody  `json:"body"`
 }
 
 type StockBody struct {
-	//HeaderID        int          `json:"header_id"`
 	PNumber   string  `json:"p_number"`
 	PName     string  `json:"p_name"`
 	WareHouse int     `json:"ware_house"`
@@ -33,18 +32,20 @@ type StockBody struct {
 }
 
 func CStockHeader(c *gin.Context) {
-	var sb []models.StockBody
-	var sh models.StockHeader
-	var stock Stock
+	var sb []models.BillEntry
+	var sh models.BillHeader
+	var stock ExBill
 	err := gins.ParseJSON(c, &stock)
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 2, false, c)
 		return
 	}
+	fmt.Println(stock, "stock")
 	if err = copier.Copy(&sh, stock); err != nil {
 		msg.Result(nil, msg.Copier, 2, false, c)
 		return
 	}
+	fmt.Println(sh, "单据头")
 	if err = copier.Copy(&sb, stock.Body); err != nil {
 		msg.Result(nil, msg.Copier, 2, false, c)
 		return
@@ -59,7 +60,6 @@ func CStockHeader(c *gin.Context) {
 }
 
 func CGetExBillDetail(c *gin.Context) {
-	//SGetExBillDetail
 	number := c.Query("number")
 	err, data, success := services.SGetExBillDetail(number)
 	if success {
