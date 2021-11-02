@@ -65,7 +65,7 @@ func (c *Custom) CreateCustom() (err error) {
 }
 
 func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, List []CustomWithLevel, total int64) {
-	var selectData = "customs.c_name, customs.c_number, customs.phone, customs.address, customs.discount, customs.created_at, customs.create_by, customs.mark, custom_levels.discount, custom_levels.id as level_id,  custom_levels.name as level_name"
+	var selectData = "customs.id, customs.c_name, customs.c_number, customs.phone, customs.address, customs.discount, customs.created_at, customs.create_by, customs.mark, custom_levels.discount, custom_levels.id as level_id,  custom_levels.name as level_name"
 	var joinData = "join custom_levels on customs.level = custom_levels.id"
 	db := GetCustomDB()
 
@@ -80,6 +80,14 @@ func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, Lis
 		return false, msg.GetFail, nil, 0
 	}
 	return true, msg.GetSuccess, List, int64(len(List))
+}
+
+func GetCustomByID(id int) (success bool, err error, custom Custom) {
+	db := GetCustomDB()
+	if err = db.Where("id = ?", id).Find(&custom).Error; err != nil {
+		return false, msg.GetFail, custom
+	}
+	return true, msg.GetSuccess, custom
 }
 
 func GetCustomsListWithQuery(param string) (err error, list []CustomSelect, success bool) {

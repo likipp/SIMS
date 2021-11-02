@@ -4,6 +4,7 @@ import (
 	"SIMS/internal/gins"
 	"SIMS/models"
 	"SIMS/services"
+	"SIMS/utils"
 	"SIMS/utils/msg"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,16 @@ func CGetCustomList(c *gin.Context) {
 		msg.Result(nil, err, 1, false, c)
 		return
 	}
+	id := utils.StringConvInt(c.Query("id"))
+	if id != 0 {
+		err, custom, success := services.SGetCustomByID(id)
+		if !success {
+			msg.Result(nil, err, 2, false, c)
+			return
+		}
+		msg.Result(custom, err, 1, true, c)
+		return
+	}
 	success, err, list, total := new(models.Custom).GetList(params)
 	if !success {
 		msg.Result(nil, err, 1, success, c)
@@ -40,7 +51,6 @@ func CGetCustomList(c *gin.Context) {
 	}
 	msg.ResultWithPageInfo(list, err, 1, success, total, params.Current, params.PageSize, c)
 }
-
 
 func CGetCustomListWithQuery(c *gin.Context) {
 	var customs []models.CustomSelect
