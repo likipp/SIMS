@@ -5,11 +5,12 @@ import (
 	"SIMS/models"
 	"SIMS/services"
 	"SIMS/utils/msg"
+	"errors"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type User struct {
+	UserID   int `json:"userid"`
 	NickName string `json:"nickname"`
 	Name     string `json:"name"`
 	Avatar   string `json:"avatar"`
@@ -33,10 +34,13 @@ func Login(c *gin.Context) {
 }
 
 func GetCurrentUser(c *gin.Context) {
+
 	var user = User{
 		Access:   "admin",
 		NickName: "周环环",
-		Name:     "eva",
+		Name:     "Eva",
+		UserID: 10000,
 	}
-	c.JSONP(http.StatusOK, user)
+	msg.Result(user, errors.New("获取成功"), 1, true, c)
+	return
 }

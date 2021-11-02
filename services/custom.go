@@ -12,7 +12,7 @@ func SCreateCustom(c *models.Custom) (err error, cR *models.Custom) {
 	return nil, c
 }
 
-func SGetCustomList(param string) (err error, pr []models.CustomSelect, success bool) {
-	err, pr, success = models.GetCustomsList(param)
+func SGetCustomListWithQuery(param string) (err error, pr []models.CustomSelect, success bool) {
+	err, pr, success = models.GetCustomsListWithQuery(param)
 	return err, pr, success
 }

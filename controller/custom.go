@@ -5,25 +5,28 @@ import (
 	"SIMS/models"
 	"SIMS/services"
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 func CCreateCustom(c *gin.Context) {
 	var custom *models.Custom
 	err := gins.ParseJSON(c, &custom)
+	fmt.Println(custom, "custom")
 	if err != nil {
 		msg.Result(nil, err, 0, false, c)
 		return
 	}
 	err, data := services.SCreateCustom(custom)
 	if err != nil {
-		msg.Result(nil, err, 0, false, c)
+		msg.Result(nil, err, 1, false, c)
 		return
 	}
 	msg.Result(data, err, 0, true, c)
+	return
 }
 
-func GetCustomList(c *gin.Context) {
+func CGetCustomList(c *gin.Context) {
 	var params models.CustomQueryParams
 	err := gins.ParseQuery(c, &params)
 	if err != nil {
@@ -39,13 +42,14 @@ func GetCustomList(c *gin.Context) {
 }
 
 
-func CGetCustomList(c *gin.Context) {
+func CGetCustomListWithQuery(c *gin.Context) {
 	var customs []models.CustomSelect
 	param := c.DefaultQuery("param", "")
-	err, customs, success := services.SGetCustomList(param)
+	err, customs, success := services.SGetCustomListWithQuery(param)
 	if !success {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
 	msg.Result(customs, err, 1, true, c)
+	return
 }
