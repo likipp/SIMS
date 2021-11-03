@@ -60,6 +60,18 @@ func ResultWithPageInfo(data interface{}, msg error, showType int, success bool,
 	})
 }
 
+func Auth(code int, data interface{}, msg error, showType int, success bool, c *gin.Context) {
+	c.JSON(code, &Response{
+		ErrorCode:    code,
+		Success:      success,
+		ErrorMessage: msg.Error(),
+		ShowType:     showType,
+		Timestamp:    time.Now().Unix(),
+		Data:         data,
+		Host:         c.ClientIP(),
+	})
+}
+
 //func Result(code int, data interface{}, msg string, success bool, c *gin.Context) {
 //	c.JSON(code, &Response{
 //		Code: code,

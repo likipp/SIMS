@@ -8,6 +8,8 @@ import (
 type Config struct {
 	MysqlAdmin MySQL `json:"mysqlAdmin"`
 	Login      Login `json:"login"`
+	RedisAdmin Redis  `json:"redisAdmin"`
+	JWT        JWT    `json:"jwt"`
 }
 
 type MySQL struct {
@@ -18,8 +20,17 @@ type MySQL struct {
 	Config   string `json:"config"`
 }
 
+type JWT struct {
+	SigningKey string `mapstructure:"signing-key" json:"signingKey" yaml:"signing-key"`
+}
+
 type Login struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type Redis struct {
+	Path     string `json:"path"`
 	Password string `json:"password"`
 }
 

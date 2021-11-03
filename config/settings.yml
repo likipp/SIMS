@@ -5,6 +5,16 @@ mysqladmin:
   dbname: "sims"
   config: "charset=utf8&parseTime=True&loc=Local"
 
+jwt:
+  JwtKey: eva0209
+
+sessions:
+  SecretKey: ses9090
+
 login:
   username: "admin"
   password: "cGx5eHeDpR59zcm70uKReuoGJIhbPVlgXuO7UqWm+p4="
+
+redisadmin:
+  path: "nas.xiaom.work:6379"
+  password: "Server@1234.com"

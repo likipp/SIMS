@@ -3,6 +3,7 @@ package main
 import (
 	"SIMS/config"
 	"SIMS/global"
+	"SIMS/init/cookies"
 	orm "SIMS/init/database"
 	"SIMS/init/globalID"
 	initTableStruct "SIMS/init/tableStruct"
@@ -19,9 +20,10 @@ func main() {
 		panic("ID生成器初始化失败")
 	}
 	initTableStruct.InitTableStruct(global.GDB)
+	cookies.InitSession(config.AdminConfig.RedisAdmin)
 	err = trans.InitTrans("zh")
 	if err != nil {
 		return
 	}
-	_ = router.InitRouter().Run()
+	router.InitRouter()
 }
