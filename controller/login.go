@@ -41,7 +41,7 @@ func Login(c *gin.Context) {
 		u.UserID = "10000"
 		GetTokenAndSession(c, u)
 		msg.Result(nil, err, 0, true, c)
-		//return
+		return
 	}
 	msg.Result(nil, err, 1, false, c)
 	return
