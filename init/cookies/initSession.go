@@ -21,7 +21,7 @@ func InitSession(admin config.Redis) {
 	//store.Pool.IdleTimeout = 60*60*24*7
 	//store.Options.MaxAge = 60*60*24*7
 	store.SetMaxAge(60 * 60 * 24 * 7)
-	store.Options.Secure = true
+	store.Options.Secure = false
 	store.Options.HttpOnly = true
 	global.GRedis = store
 }
@@ -39,22 +39,22 @@ func GetSession(c *gin.Context) (*sessions.Session, error) {
 func SaveSession(c *gin.Context) {
 	//err := sessions.Save(c.Request, c.Writer)
 	if err := sessions.Save(c.Request, c.Writer); err != nil {
-		msg.Result(nil, msg.SaveSessionFail, 2, false, c )
+		msg.Result(nil, msg.SaveSessionFail, 2, false, c)
 	}
 }
 
 func DeleteSession(c *gin.Context) {
 	session, err := GetSession(c)
 	if err != nil {
-		msg.Result(nil, msg.DeleteSessionFail, 2, false, c )
+		msg.Result(nil, msg.DeleteSessionFail, 2, false, c)
 		c.Abort()
 		return
 	}
 	session.Options.MaxAge = -1
 	if err := sessions.Save(c.Request, c.Writer); err != nil {
-		msg.Result(nil, msg.DeleteSessionFail, 2, false, c )
+		msg.Result(nil, msg.DeleteSessionFail, 2, false, c)
 		c.Abort()
 		return
 	}
-	msg.Result(nil, msg.LoginOutSuccess, 0, true, c )
+	msg.Result(nil, msg.LoginOutSuccess, 0, true, c)
 }
