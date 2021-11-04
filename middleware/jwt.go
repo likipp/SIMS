@@ -60,7 +60,7 @@ func JWTAuth() gin.HandlerFunc {
 			}
 			msg.Auth(http.StatusExpectationFailed, gin.H{
 				"reload": true,
-			}, err, 2, false, c)
+			}, msg.ExpectationFailed, 2, false, c)
 			c.Abort()
 			return
 		}
@@ -102,7 +102,9 @@ func (j *JWT) ParseToken(tokenString string) (*models.CustomClaims, error) {
 			} else {
 				return nil, TokenInvalid
 			}
+			return nil, TokenNotValidYet
 		}
+		return nil, TokenNotValidYet
 	}
 	if token != nil {
 		if claims, ok := token.Claims.(*models.CustomClaims); ok && token.Valid {

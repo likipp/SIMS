@@ -25,9 +25,16 @@ type User struct {
 	Access   string `json:"access"`
 }
 
+type LoginResult struct {
+	Status string `json:"status"`
+	Success bool `json:"success"`
+	Type    string `json:"type"`
+}
+
 func Login(c *gin.Context) {
 	var l models.Login
 	var u User
+	var ls LoginResult
 	err := gins.ParseJSON(c, &l)
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
@@ -40,10 +47,18 @@ func Login(c *gin.Context) {
 		u.NickName = "周环环"
 		u.UserID = "10000"
 		GetTokenAndSession(c, u)
-		msg.Result(nil, err, 0, true, c)
+		ls.Success = true
+		ls.Status = "ok"
+		ls.Type = "account"
+		//msg.Result(ls, err, 0, true, c)
+		c.JSONP(http.StatusOK, ls)
 		return
 	}
-	msg.Result(nil, err, 1, false, c)
+	ls.Status = "error"
+	ls.Success = false
+	ls.Type = "account"
+	//msg.Result(ls, err, 1, false, c)
+	c.JSONP(http.StatusOK, ls)
 	return
 }
 
@@ -59,7 +74,7 @@ func GetCurrentUser(c *gin.Context) {
 	user.NickName = session.Values["nickname"].(string)
 	user.Access = "admin"
 	user.Name = session.Values["name"].(string)
-	msg.Result(user, errors.New("获取成功"), 1, true, c)
+	msg.Result(user, errors.New("获取成功"), 0, true, c)
 	return
 }
 

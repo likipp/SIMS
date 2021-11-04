@@ -31,7 +31,7 @@ func GetSession(c *gin.Context) (*sessions.Session, error) {
 	if err != nil {
 		//msg.Auth(http.StatusBadRequest, nil, msg.GetSessionFail, 2, false, c)
 		//c.Abort()
-		return nil, err
+		return nil, msg.GetTokenFail
 	}
 	return session, nil
 }
