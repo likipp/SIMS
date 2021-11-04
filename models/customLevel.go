@@ -50,7 +50,7 @@ func (c *CustomLevel) GetList(params CustomLevelQueryParams) (success bool, err 
 	if params.Discount <= 0 && params.Name == "" {
 		db = db.Find(&List)
 	}
-	err = schema.QueryPaging(params.PaginationParam)
+	//err = schema.QueryPaging(params.PaginationParam)
 	if err != nil {
 		return false, msg.GetFail, nil, 0
 	}

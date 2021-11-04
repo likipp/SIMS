@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"SIMS/global"
 	"SIMS/utils/msg"
+	"gorm.io/gorm"
 )
 
 type PaginationParam struct {
@@ -37,14 +37,15 @@ const (
 	OrderByDESC OrderDirection = 2
 )
 
-func QueryPaging(pp PaginationParam) error {
-	limit := pp.PageSize
-	offset := pp.PageSize * (pp.Current - 1)
-	err := global.GDB.Limit(limit).Offset(offset).Order("id desc").Error
+func QueryPaging(pp PaginationParam, db *gorm.DB) (error, *gorm.DB) {
+	page := pp.GetCurrent()
+	limit := pp.GetPageSize()
+	offset := limit * (page - 1)
+	err := db.Offset(offset).Limit(limit).Order("id desc").Error
 	if err != nil {
-		err = msg.GetFail
+		return msg.PaginationFailed, db
 	}
-	return err
+	return nil, db
 }
 
 // NewOrderFieldWithKeys 创建排序字段(默认升序排序)，可指定不同key的排序规则

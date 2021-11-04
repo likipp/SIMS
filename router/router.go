@@ -41,13 +41,17 @@ func InitRouter() {
 		// 品牌路由
 		baseRouter.POST("brand", controller.CCreateBrand)
 
+		// 单位路由
+		baseRouter.POST("unit", controller.CCreateUnit)
+
 		// 仓库路由  CWareHouseList
 		baseRouter.POST("warehouse/", controller.CCreateWareHouse)
 		baseRouter.GET("warehouse/", controller.CWareHouseList)
 
 		// 产品路由
 		baseRouter.POST("product/", controller.CCreateProduct)
-		baseRouter.GET("product/", controller.CGetProductList)
+		baseRouter.GET("product/", controller.CGetProductsList)
+		baseRouter.GET("product-select/", controller.CGetProductsSelectList)
 
 		// 库存路由
 		//baseRouter.POST("stock/", controller.CStockCount)

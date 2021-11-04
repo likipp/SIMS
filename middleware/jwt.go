@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	TokenExpired     error = errors.New("token is expired")
-	TokenNotValidYet error = errors.New("token not active yet")
-	TokenMalformed   error = errors.New("that's not even a token")
-	TokenInvalid     error = errors.New("couldn't handle this token")
+	TokenExpired     error = errors.New("token已过期")
+	TokenNotValidYet error = errors.New("token未激活")
+	TokenMalformed   error = errors.New("token格式不正确")
+	TokenInvalid     error = errors.New("token不可靠")
 )
 
 type JWT struct {
@@ -102,7 +102,6 @@ func (j *JWT) ParseToken(tokenString string) (*models.CustomClaims, error) {
 			} else {
 				return nil, TokenInvalid
 			}
-			return nil, TokenNotValidYet
 		}
 		return nil, TokenNotValidYet
 	}

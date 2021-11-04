@@ -41,7 +41,7 @@ func CGetCustomList(c *gin.Context) {
 			msg.Result(nil, err, 2, false, c)
 			return
 		}
-		msg.Result(custom, err, 1, true, c)
+		msg.Result(custom, err, 0, true, c)
 		return
 	}
 	success, err, list, total := new(models.Custom).GetList(params)

@@ -43,8 +43,6 @@ type CustomSelect struct {
 	ID        int    `json:"id"`
 	Discount  int    `json:"discount"`
 	LevelName string `json:"l_name"`
-	//CName     string `json:"c_name"`
-	//CNumber   string `json:"c_number"`
 }
 
 func GetCustomDB() *gorm.DB {
@@ -75,7 +73,7 @@ func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, Lis
 		db.Select(selectData).Joins(joinData).Find(&List)
 
 	}
-	err = schema.QueryPaging(params.PaginationParam)
+	//err = schema.QueryPaging(params.PaginationParam)
 	if err != nil {
 		return false, msg.GetFail, nil, 0
 	}

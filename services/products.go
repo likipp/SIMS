@@ -9,7 +9,7 @@ func SCreateProduct(p *models.Products) (err error, pR *models.Products, success
 	return err, pR, success
 }
 
-func SGetProductList(param string) (err error, pr []models.ProductsSelect, success bool) {
-	err, pr, success = models.GetProductsList(param)
+func SGetProductsSelectList(param string) (err error, pr []models.ProductsSelect, success bool) {
+	err, pr, success = models.GetProductsSelectList(param)
 	return err, pr, success
 }
