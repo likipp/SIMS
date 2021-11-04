@@ -7,6 +7,7 @@ import (
 	"SIMS/utils/msg"
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
@@ -98,17 +99,22 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 
 func (p *Products) GetProductsList(params ProductQueryParams) (err error, List []ProductQueryResult, total int64, success bool) {
 	db := GetproductsDB()
-	if v := params.PName; v != "" {
-		db = db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Count(&total)
-	}
-	if v := params.PNumber; v != "" {
-		db = db.Where("p_number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Count(&total)
-	}
-	if v := params.Brand; v > 0 {
-		db = db.Where("brand = ?", v).Count(&total)
-	}
-	if params.Brand <= 0 && params.PName == "" && params.PNumber == "" {
-		db = db.Count(&total)
+	var product Products
+	//if v := params.PName; v != "" {
+	//	db = db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Count(&total)
+	//}
+	//if v := params.PNumber; v != "" {
+	//	db = db.Where("p_number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Count(&total)
+	//}
+	//if v := params.Brand; v > 0 {
+	//	db = db.Where("brand = ?", v).Count(&total)
+	//}
+	//if params.Brand <= 0 && params.PName == "" && params.PNumber == "" {
+	//	db = db.Count(&total)
+	//}
+	err = copier.Copy(&product, &params)
+	if err != nil {
+		return msg.Copier, nil, 0, false
 	}
 	err, db = schema.QueryPaging(params.PaginationParam, db)
 	if err != nil {
@@ -118,5 +124,5 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 	if err != nil {
 		return msg.GetFail, nil, 0, false
 	}
-	return msg.GetSuccess, List, total, true
+	return msg.GetSuccess, List, int64(len(List)), true
 }
