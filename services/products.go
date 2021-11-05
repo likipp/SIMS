@@ -13,3 +13,8 @@ func SGetProductsSelectList(param string) (err error, pr []models.ProductsSelect
 	err, pr, success = models.GetProductsSelectList(param)
 	return err, pr, success
 }
+
+func SUpdateProduct(p *models.Products) (err error, success bool) {
+	err, success = p.UpdateProduct()
+	return err, success
+}

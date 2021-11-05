@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"SIMS/utils/msg"
 	"gorm.io/gorm"
 )
 
@@ -12,6 +11,8 @@ type PaginationParam struct {
 	Current      int  `form:"current,default=1"`                     // 当前页
 	PageSize     int  `form:"pageSize,default=10" binding:"max=100"` // 页大小
 }
+
+type OrderParam map[string]string
 
 // GetCurrent 获取当前页
 func (p PaginationParam) GetCurrent() int {
@@ -37,15 +38,31 @@ const (
 	OrderByDESC OrderDirection = 2
 )
 
-func QueryPaging(pp PaginationParam, db *gorm.DB) (error, *gorm.DB) {
-	page := pp.GetCurrent()
-	limit := pp.GetPageSize()
-	offset := limit * (page - 1)
-	err := db.Offset(offset).Limit(limit).Order("id desc").Error
-	if err != nil {
-		return msg.PaginationFailed, db
+func QueryPaging(pp PaginationParam) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		page := pp.GetCurrent()
+		limit := pp.GetPageSize()
+		offset := limit * (page - 1)
+		return db.Offset(offset).Limit(limit)
 	}
-	return nil, db
+}
+
+func QueryOrder(po interface{}) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		//data, ok := po.(map[string]interface{})
+		//if !ok {
+		//	return db
+		//}
+		//for _, v := range data {
+		//	if v != "" {
+		//		return db.Order(v)
+		//	}
+		//}
+		if po != "" {
+			return db.Order(po)
+		}
+		return db
+	}
 }
 
 // NewOrderFieldWithKeys 创建排序字段(默认升序排序)，可指定不同key的排序规则

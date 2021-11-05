@@ -5,6 +5,8 @@ import (
 	"SIMS/middleware"
 	"context"
 	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +19,7 @@ func InitRouter() {
 	//r.StaticFS("/images", http.Dir("./static/images"))
 	//r.StaticFile("/favicon.ico", "./static/images/default.jpg")
 	r.POST("/api/v1/base/login/", controller.Login)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Use(middleware.JWTAuth()).Use(middleware.CorsMiddlewares())
 	baseRouter := r.Group("/api/v1/base")
 	{
@@ -52,6 +55,7 @@ func InitRouter() {
 		baseRouter.POST("product/", controller.CCreateProduct)
 		baseRouter.GET("product/", controller.CGetProductsList)
 		baseRouter.GET("product-select/", controller.CGetProductsSelectList)
+		baseRouter.PATCH("product/:id", controller.CUpdateProduct)
 
 		// 库存路由
 		//baseRouter.POST("stock/", controller.CStockCount)

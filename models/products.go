@@ -24,8 +24,17 @@ type Products struct {
 	Picture   string  `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
 }
 
+//type ProductOrder struct {
+//	Sorter string `form:"Sorter"`
+//	//PNumberOrder string `form:"p_number_order"`
+//	//BrandOrder string  `form:"brand_order"`
+//	//IDOrder    string `form:"id_order"`
+//}
+
 type ProductQueryParams struct {
 	schema.PaginationParam
+	//ProductOrder
+	Sorter  string `form:"sorter"`
 	PName   string `form:"p_name"`
 	PNumber string `form:"p_number"`
 	Brand   int    `form:"brand"`
@@ -59,12 +68,12 @@ func (p *Products) Validate() error {
 	return err
 }
 
-func GetproductsDB() *gorm.DB {
+func GetProductsDB() *gorm.DB {
 	return entity.GetDBWithModel(global.GDB, new(Products))
 }
 
 func (p *Products) CreateProducts() (err error, success bool) {
-	db := GetproductsDB()
+	db := GetProductsDB()
 	err = entity.CheckExist(db, "p_name", p.PName)
 	err = db.Create(p).Error
 	if err != nil {
@@ -78,7 +87,7 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 	var ps []ProductsSelect
 	var psl []Products
 	con := fmt.Sprintf("%s%s%s", "%", param, "%")
-	db := GetproductsDB()
+	db := GetProductsDB()
 	if param != "" {
 		err = db.Where("p_name like ? or p_number like ?", con, con).Find(&psl).Error
 		if err != nil {
@@ -98,7 +107,7 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 }
 
 func (p *Products) GetProductsList(params ProductQueryParams) (err error, List []ProductQueryResult, total int64, success bool) {
-	db := GetproductsDB()
+	db := GetProductsDB()
 	var product Products
 	//if v := params.PName; v != "" {
 	//	db = db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Count(&total)
@@ -116,13 +125,19 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 	if err != nil {
 		return msg.Copier, nil, 0, false
 	}
-	err, db = schema.QueryPaging(params.PaginationParam, db)
-	if err != nil {
-		return err, nil, 0, false
-	}
-	err = db.Find(&List).Error
+	//order := utils.StructConvMap(params.ProductOrder)
+	db.Scopes(schema.QueryPaging(params.PaginationParam), schema.QueryOrder(params.Sorter)).Find(&List)
 	if err != nil {
 		return msg.GetFail, nil, 0, false
 	}
 	return msg.GetSuccess, List, int64(len(List)), true
+}
+
+func (p *Products) UpdateProduct() (err error, success bool) {
+	db := GetProductsDB()
+	err = db.Where("id = ?", p.ID).Updates(&p).Error
+	if err != nil {
+		return msg.UpdatedFail, false
+	}
+	return msg.UpdatedSuccess, true
 }

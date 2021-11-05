@@ -4,6 +4,7 @@ import (
 	"SIMS/internal/gins"
 	"SIMS/models"
 	"SIMS/services"
+	"SIMS/utils"
 	"SIMS/utils/msg"
 	"github.com/gin-gonic/gin"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -56,4 +57,22 @@ func CGetProductsList(c *gin.Context) {
 		return
 	}
 	msg.ResultWithPageInfo(list, err, 0, success, total, params.Current, params.PageSize, c)
+}
+
+func CUpdateProduct(c *gin.Context) {
+	var product models.Products
+	err := gins.ParseJSON(c, &product)
+	if err != nil {
+		msg.Result(nil, err, 1, false, c)
+		return
+	}
+	// 获取到UUID, 只有uuid有值时才能更新成功
+	id := c.Param("id")
+	product.ID = utils.StringConvInt(id)
+	err, success := product.UpdateProduct()
+	if !success {
+		msg.Result(nil, err, 1, success, c)
+		return
+	}
+	msg.Result(nil, err, 0, true, c)
 }
