@@ -3,6 +3,7 @@ package models
 import (
 	"SIMS/global"
 	"SIMS/internal/entity"
+	"SIMS/internal/schema"
 	"SIMS/utils/msg"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gorm.io/gorm"
@@ -23,17 +24,19 @@ type StockWithAction struct {
 }
 
 type ExStock struct {
-	Number    string     `json:"number"`
-	CName     string     `json:"c_name"`
-	CreatedAt *time.Time `json:"created_at"`
-	PayMethod string     `json:"pay_method"`
-	PNumber   string     `json:"p_number"`
-	PName     string     `json:"p_name"`
-	ExQTY     string     `json:"ex_qty"`
-	UnitPrice int        `json:"unit_price"`
-	Total     int        `json:"total"`
-	HDiscount int        `json:"h_discount"`
-	BDiscount int        `json:"b_discount"`
+	Number     string     `json:"number"`
+	CName      string     `json:"c_name"`
+	CreatedAt  *time.Time `json:"created_at"`
+	PayMethod  string     `json:"pay_method"`
+	PNumber    string     `json:"p_number"`
+	PName      string     `json:"p_name"`
+	ExQTY      string     `json:"ex_qty"`
+	UnitPrice  int        `json:"unit_price"`
+	ExDiscount float32    `json:"ex_discount"`
+	InDiscount float32    `json:"in_discount"`
+	Cost       float32    `json:"cost"`
+	Profit     float32    `json:"profit"`
+	Total      float32    `json:"total"`
 }
 
 type InStock struct {
@@ -45,6 +48,11 @@ type InStock struct {
 	InQTY     string     `json:"in_qty"`
 	UnitPrice int        `json:"unit_price"`
 	Total     int        `json:"total"`
+}
+
+type ExListQueryParams struct {
+	schema.PaginationParam
+	Sorter string `form:"sorter"`
 }
 
 func (s *Stock) Validate() error {
@@ -125,9 +133,11 @@ func GetStockList() (error, []Stock, bool) {
 	return msg.GetSuccess, ss, true
 }
 
-func GetExStockList() (error, []ExStock, bool) {
+func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 	var el []ExStock
-	err := global.GDB.Select("bill_headers.number, customs.c_name, bill_headers.created_at, bill_headers.pay_method, bill_headers.discount as h_discount, bill_entries.p_number, bill_entries.p_name, bill_entries.ex_qty, bill_entries.unit_price, bill_entries.discount as b_discount, bill_entries.total").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Joins("left join customs on customs.id = bill_headers.custom").Where("bill_headers.stock_type = ?", "出库单").Find(&el).Error
+	db := global.GDB.Select("bill_headers.number, customs.c_name, bill_headers.created_at, bill_headers.pay_method, bill_headers.discount as h_discount, bill_entries.p_number, bill_entries.p_name, bill_entries.ex_qty, bill_entries.unit_price, bill_entries.discount as b_discount, bill_entries.total, bill_entries.cost, bill_entries.profit").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Joins("left join customs on customs.id = bill_headers.custom").Where("bill_headers.stock_type = ?", "出库单")
+	err := db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&el).Error
+	//.Find(&el).Error
 	if err != nil {
 		return msg.GetFail, el, false
 	}

@@ -29,3 +29,17 @@ func CCreateUnit(c *gin.Context) {
 	msg.Result(data, err, 0, true, c)
 	return
 }
+
+func CGetUnitSelectList(c *gin.Context) {
+	var units []models.UnitSelect
+	param := c.DefaultQuery("param", "")
+	if param == "{}" {
+		param = ""
+	}
+	err, units, success := services.SGetUnitSelectList(param)
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(units, err, 1, true, c)
+}

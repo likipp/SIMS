@@ -22,3 +22,26 @@ func CCreateBrand(c *gin.Context) {
 	}
 	msg.Result(nil, err, 2, false, c)
 }
+
+func CGetBrandSelectList(c *gin.Context) {
+	var units []models.BrandSelect
+	param := c.DefaultQuery("param", "")
+	if param == "{}" {
+		param = ""
+	}
+	err, units, success := services.SGetBrandSelectList(param)
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(units, err, 1, true, c)
+}
+
+func CGetBrandTree(c *gin.Context) {
+	err, list, success := services.SGetBrandTree()
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(list, err, 1, true, c)
+}

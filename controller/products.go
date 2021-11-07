@@ -24,10 +24,10 @@ func CCreateProduct(c *gin.Context) {
 	}
 	err, data, success := services.SCreateProduct(product)
 	if success {
-		msg.Result(data, err, 1, true, c)
+		msg.Result(data, err, 0, true, c)
 		return
 	}
-	msg.Result(nil, err, 2, false, c)
+	msg.Result(nil, err, 1, false, c)
 }
 
 func CGetProductsSelectList(c *gin.Context) {

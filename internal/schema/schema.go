@@ -8,13 +8,13 @@ type PaginationParam struct {
 	Pagination   bool `form:"-"` // 是否使用分页查询
 	OnlyCount    bool `form:"-"` // 是否仅查询count
 	HasCondition bool `form:"-"`
-	Current      int  `form:"current,default=1"`                     // 当前页
-	PageSize     int  `form:"pageSize,default=10" binding:"max=100"` // 页大小
+	Current      int  `form:"current,default=1"`                      // 当前页
+	PageSize     int  `form:"pageSize,default=10" binding:"max=9999"` // 页大小
 }
 
 type OrderParam map[string]string
 
-// GetCurrent 获取当前页
+// GetCurrent 获取当前页a
 func (p PaginationParam) GetCurrent() int {
 	return p.Current
 }

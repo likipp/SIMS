@@ -9,3 +9,8 @@ func SCreateUnit(u *models.Unit) (err error, ur *models.Unit, success bool) {
 	}
 	return err, u, true
 }
+
+func SGetUnitSelectList(param string) (error, []models.UnitSelect, bool) {
+	err, list, success := models.GetUnitSelectList(param)
+	return err, list, success
+}

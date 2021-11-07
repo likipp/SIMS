@@ -44,6 +44,7 @@ func (w *WareHouse) CreateWareHouse() (err error, success bool) {
 	}
 	return msg.CreatedSuccess, true
 }
+
 //
 //func GetWareHouseList(param string) (err error, list []WareHouseSelect, success bool) {
 //	var w WareHouseSelect
@@ -69,7 +70,7 @@ func (w *WareHouse) CreateWareHouse() (err error, success bool) {
 //	return msg.GetSuccess, ws, true
 //}
 
-func GetWareHouseList(param string) (err error, list []WareHouseSelect, success bool) {
+func GetWareHouseSelectList(param string) (err error, list []WareHouseSelect, success bool) {
 	//var p ProductsSelect
 	var ps []WareHouseSelect
 	//var psl []Products
@@ -85,10 +86,8 @@ func GetWareHouseList(param string) (err error, list []WareHouseSelect, success 
 	if err = db.Select(selectData).Find(&ps).Error; err != nil {
 		return msg.GetFail, list, false
 	}
-	//for i, _ := range ps {
-	//	ps[i].Value = ps[i].Name
-	//	ps[i].Label = ps[i].PNumber
-	//	ps = append(ps, p)
-	//}
+	for i, _ := range ps {
+		ps[i].Key = ps[i].Value
+	}
 	return msg.GetSuccess, ps, true
 }

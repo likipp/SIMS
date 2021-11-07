@@ -15,8 +15,8 @@ func InitTableStruct(db *gorm.DB) {
 		models.CustomLevel{},
 		models.Custom{},
 		models.Stock{},
-		models.StockCount{},
 		models.BillHeader{},
 		models.BillEntry{},
+		models.Payable{},
 	)
 }

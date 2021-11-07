@@ -11,3 +11,8 @@ func SGetExBillDetail(number string) (err error, b models.ExBillDetail, success 
 	err, b, success = models.GetExBillDetail(number)
 	return err, b, success
 }
+
+func SGetInBillDetail(number string) (err error, b models.InBillDetail, success bool) {
+	err, b, success = models.GetInBillDetail(number)
+	return err, b, success
+}

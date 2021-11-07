@@ -9,15 +9,19 @@ import (
 
 type BillEntry struct {
 	BaseModel
-	HeaderID  int     `json:"header_id" gorm:"comment:'表头ID'"`
-	PNumber   string  `json:"p_number" gorm:"comment:'产品代码'"`
-	PName     string  `json:"p_name" gorm:"comment:'产品名称'"`
-	WareHouse int     `json:"ware_house" gorm:"comment:'仓库'"`
-	ExQTY     int     `json:"ex_qty" gorm:"comment:'出库数量'"`
-	InQTY     int     `json:"in_qty" gorm:"comment:'入库数量'"`
-	UnitPrice float32 `json:"unit_price" gorm:"comment:'单价'"`
-	Discount  float32 `json:"discount" gorm:"comment:'折扣'"`
-	Total     float32 `json:"total" gorm:"comment:'金额'"`
+	HeaderID   int     `json:"header_id" gorm:"comment:'表头ID'"`
+	PNumber    string  `json:"p_number" gorm:"comment:'产品代码'"`
+	PName      string  `json:"p_name" gorm:"comment:'产品名称'"`
+	WareHouse  int     `json:"ware_house" gorm:"comment:'仓库'"`
+	ExQTY      int     `json:"ex_qty" gorm:"comment:'出库数量'"`
+	InQTY      int     `json:"in_qty" gorm:"comment:'入库数量'"`
+	UnitPrice  float32 `json:"unit_price" gorm:"comment:'单价'"`
+	Discount   float32 `json:"discount" gorm:"折扣"`
+	ExDiscount float32 `json:"ex_discount" gorm:"comment:'会员折扣'"`
+	InDiscount float32 `json:"in_discount" gorm:"comment:'进货折扣'"`
+	Cost       float32 `json:"cost" gorm:"成本"`
+	Profit     float32 `json:"profit" gorm:"利润"`
+	Total      float32 `json:"total" gorm:"comment:'金额'"`
 }
 
 func (be *BillEntry) Validate() error {
@@ -26,6 +30,10 @@ func (be *BillEntry) Validate() error {
 		validation.Field(&be.PName, validation.Required.Error("产品名称不能为空")),
 		validation.Field(&be.WareHouse, validation.Required.Error("仓库不能为空")),
 		validation.Field(&be.UnitPrice, validation.Required.Error("单价不能为空")),
+		validation.Field(&be.InDiscount, validation.Required.Error("进货折扣不能为空")),
+		validation.Field(&be.ExDiscount, validation.Required.Error("售出折扣不能为空")),
+		validation.Field(&be.Cost, validation.Required.Error("成本不能为空")),
+		validation.Field(&be.Profit, validation.Required.Error("利润不能为空")),
 		validation.Field(&be.Total, validation.Required.Error("金额不能为空")),
 		//validation.Field(&sb.InQTY, validation.When(s.StockType == global.In, validation.Required.Error("数量不能为空"))),
 		//validation.Field(&sb.ExQTY, validation.When(s.StockType != global.In, validation.Required.Error("数量不能为空"))),
@@ -33,6 +41,7 @@ func (be *BillEntry) Validate() error {
 	return err
 }
 
+// InStockLog 入库碟事务日志
 func (be *BillEntry) InStockLog(tx *gorm.DB) (err error, success bool) {
 	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
 	if stock.QTY > 0 {
@@ -79,7 +88,3 @@ func (be *BillEntry) ExStockLog(tx *gorm.DB) (err error, success bool) {
 	}
 	return msg.ExGTStock, false
 }
-
-//func GetStockIn() {
-//	global.GDB.Where("stock_type = ?", global.In).Find()
-//}

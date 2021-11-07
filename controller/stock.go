@@ -106,12 +106,19 @@ func CSChangeStock(c *gin.Context) {
 }
 
 func CGetExStockList(c *gin.Context) {
-	err, list, success := services.SGetExStockList()
-	if !success {
-		msg.Result(nil, err, 2, false, c)
+	var params models.ExListQueryParams
+	err := gins.ParseQuery(c, &params)
+	if err != nil {
+		msg.Result(nil, err, 1, false, c)
 		return
 	}
-	msg.Result(list, err, 1, true, c)
+
+	err, list, success := services.SGetExStockList(params)
+	if !success {
+		msg.Result(nil, err, 1, false, c)
+		return
+	}
+	msg.ResultWithPageInfo(list, err, 0, success, int64(len(list)), params.Current, params.PageSize, c)
 }
 
 func CGetInStockList(c *gin.Context) {

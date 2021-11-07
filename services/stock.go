@@ -29,8 +29,8 @@ func SChangeStock(s models.Stock, action string, qty int) (err error, success bo
 	return err, true
 }
 
-func SGetExStockList() (err error, list []models.ExStock, success bool) {
-	err, list, success = models.GetExStockList()
+func SGetExStockList(params models.ExListQueryParams) (err error, list []models.ExStock, success bool) {
+	err, list, success = models.GetExStockList(params)
 	return err, list, true
 }
 

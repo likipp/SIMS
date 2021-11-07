@@ -16,7 +16,7 @@ type Products struct {
 	PName     string  `json:"p_name" gorm:"comment:'产品名称'"`
 	PNumber   string  `gorm:"index not null; comment:'产品编号'" json:"p_number"`
 	Spec      string  `json:"p_spec" gorm:"comment:'规格型号'"`
-	Price     float64 `json:"p_price" gorm:"comment:'单价'"`
+	Price     float32 `json:"p_price" gorm:"comment:'单价'"`
 	Brand     int     `json:"brand" gorm:"comment:'品牌'"`
 	Unit      int     `json:"unit" gorm:"comment:'单位'"`
 	WareHouse int     `json:"ware_house" gorm:"comment:'默认仓库'"`
@@ -45,7 +45,7 @@ type ProductQueryResult struct {
 	PName   string  `json:"p_name"`
 	PNumber string  `json:"p_number"`
 	Spec    string  `json:"p_spec"`
-	Price   float64 `json:"price"`
+	Price   float32 `json:"price"`
 	Brand   int     `json:"brand"`
 	Unit    int     `json:"unit"`
 	Mark    string  `json:"mark"`
@@ -53,9 +53,11 @@ type ProductQueryResult struct {
 }
 
 type ProductsSelect struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-	Key   string `json:"key"`
+	Value     string  `json:"value"`
+	Label     string  `json:"label"`
+	Key       string  `json:"key"`
+	Price     float32 `json:"price"`
+	WareHouse int     `json:"ware_house"`
 }
 
 func (p *Products) Validate() error {
@@ -63,7 +65,7 @@ func (p *Products) Validate() error {
 		validation.Field(&p.PName, validation.Required.Error("产品名称不能为空")),
 		validation.Field(&p.Brand, validation.Required.Error("品牌不能为空")),
 		validation.Field(&p.Unit, validation.Required.Error("单位不能为空")),
-		validation.Field(&p.Price, validation.Min(1).Error("单价必须大于0"), validation.Required.Error("单价不能为空")),
+		//validation.Field(&p.Price, validation.Min(1).Error("单价必须大于0"), validation.Required.Error("单价不能为空")),
 	)
 	return err
 }
@@ -89,7 +91,7 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 	con := fmt.Sprintf("%s%s%s", "%", param, "%")
 	db := GetProductsDB()
 	if param != "" {
-		err = db.Where("p_name like ? or p_number like ?", con, con).Find(&psl).Error
+		err = db.Where("p_number like ?", con).Or("p_name like ?", con).Find(&psl).Error
 		if err != nil {
 			return msg.GetFail, list, false
 		}
@@ -98,9 +100,13 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 		return msg.GetFail, list, false
 	}
 	for _, pro := range psl {
+		//var ws WareHouse
 		p.Value = pro.PName
 		p.Label = pro.PNumber
 		p.Key = pro.PNumber
+		p.Price = pro.Price
+		//global.GDB.Select("Name").Where("id = ?", pro.WareHouse).Find(&ws)
+		p.WareHouse = pro.WareHouse
 		ps = append(ps, p)
 	}
 	return msg.GetSuccess, ps, true
@@ -126,7 +132,9 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 		return msg.Copier, nil, 0, false
 	}
 	//order := utils.StructConvMap(params.ProductOrder)
-	db.Scopes(schema.QueryPaging(params.PaginationParam), schema.QueryOrder(params.Sorter)).Find(&List)
+	//, schema.QueryOrder(params.Sorter)
+	db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&List)
+
 	if err != nil {
 		return msg.GetFail, nil, 0, false
 	}

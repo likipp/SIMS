@@ -4,13 +4,21 @@ import (
 	"SIMS/global"
 	"SIMS/internal/entity"
 	"SIMS/utils/msg"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type Unit struct {
 	BaseModel
 	Name string `json:"name" gorm:"comment:'名称'"`
+}
+
+type UnitSelect struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
+	Key   string `json:"key"`
 }
 
 func (u *Unit) Validate() error {
@@ -35,4 +43,28 @@ func (u *Unit) CreateUnit() error {
 		return msg.CreatedFail
 	}
 	return msg.CreatedSuccess
+}
+
+func GetUnitSelectList(param string) (err error, list []UnitSelect, success bool) {
+	var us UnitSelect
+	var usl []UnitSelect
+	var ul []Unit
+	con := fmt.Sprintf("%s%s%s", "%", param, "%")
+	db := getUnitDB()
+	if param != "" {
+		err = db.Where("name like ?", con).Find(&ul).Error
+		if err != nil {
+			return msg.GetFail, list, false
+		}
+	}
+	if err = db.Find(&ul).Error; err != nil {
+		return msg.GetFail, list, false
+	}
+	for i, _ := range ul {
+		us.Value = strconv.Itoa(ul[i].ID)
+		us.Key = strconv.Itoa(ul[i].ID)
+		us.Label = ul[i].Name
+		usl = append(usl, us)
+	}
+	return msg.GetSuccess, usl, true
 }

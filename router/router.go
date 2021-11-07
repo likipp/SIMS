@@ -43,13 +43,16 @@ func InitRouter() {
 
 		// 品牌路由
 		baseRouter.POST("brand", controller.CCreateBrand)
+		baseRouter.GET("brand-select/", controller.CGetBrandSelectList)
+		baseRouter.GET("brand-tree/", controller.CGetBrandTree)
 
 		// 单位路由
 		baseRouter.POST("unit", controller.CCreateUnit)
+		baseRouter.GET("unit-select/", controller.CGetUnitSelectList)
 
 		// 仓库路由  CWareHouseList
 		baseRouter.POST("warehouse/", controller.CCreateWareHouse)
-		baseRouter.GET("warehouse/", controller.CWareHouseList)
+		baseRouter.GET("warehouse/", controller.CWareHouseSelectList)
 
 		// 产品路由
 		baseRouter.POST("product/", controller.CCreateProduct)
@@ -68,6 +71,10 @@ func InitRouter() {
 		baseRouter.GET("stock/in", controller.CGetInStockList)
 		baseRouter.POST("stock/:id/", controller.CSChangeStock)
 		baseRouter.GET("ex-bill/", controller.CGetExBillDetail)
+		baseRouter.GET("in-bill/", controller.CGetInBillDetail)
+
+		// 应付款单据
+		baseRouter.POST("payable/", controller.CCreatePayBill)
 	}
 	srv := &http.Server{
 		Addr:    ":8080",

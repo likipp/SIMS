@@ -7,10 +7,11 @@ func SCreateWareHouse(w *models.WareHouse) (err error, wR *models.WareHouse, suc
 	return err, wR, success
 }
 
-func SGetWareHouseList(param string) (err error, pr []models.WareHouseSelect, success bool) {
-	err, pr, success = models.GetWareHouseList(param)
+func SGetWareHouseSelectList(param string) (err error, pr []models.WareHouseSelect, success bool) {
+	err, pr, success = models.GetWareHouseSelectList(param)
 	return err, pr, success
 }
+
 //
 //func SGetWareHouseList(param string) (err error, pr []models.WareHouseSelect, success bool) {
 //	err, pr, success = models.GetWareHouseList(param)

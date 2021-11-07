@@ -32,4 +32,5 @@ var (
 	GetTokenSuccess      = errors.New("获取Token成功")
 	ExpectationFailed    = errors.New("未登录或token已过期")
 	PaginationFailed     = errors.New("分页失败")
+	AmountSuccess        = errors.New("货款已结清")
 )
