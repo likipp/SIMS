@@ -40,14 +40,17 @@ type ExStock struct {
 }
 
 type InStock struct {
-	Number    string     `json:"number"`
-	CreatedAt *time.Time `json:"created_at"`
-	PayMethod string     `json:"pay_method"`
-	PNumber   string     `json:"p_number"`
-	PName     string     `json:"p_name"`
-	InQTY     string     `json:"in_qty"`
-	UnitPrice int        `json:"unit_price"`
-	Total     int        `json:"total"`
+	ID       int                `json:"id"`
+	Number    string            `json:"number"`
+	Status   int                `json:"status"`
+	CreatedAt *time.Time        `json:"created_at"`
+	PayMethod string            `json:"pay_method"`
+	PNumber   string            `json:"p_number"`
+	PName     string            `json:"p_name"`
+	InQTY     string            `json:"in_qty"`
+	UnitPrice int               `json:"unit_price"`
+	BillAmount   float32        `json:"bill_amount"`
+	RemainAmount float32        `json:"remain_amount"`
 }
 
 type ExListQueryParams struct {
@@ -146,7 +149,7 @@ func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 
 func GetInStockList() (error, []InStock, bool) {
 	var el []InStock
-	err := global.GDB.Select("bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_entries.total").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单").Find(&el).Error
+	err := global.GDB.Select("bill_headers.id, bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_headers.bill_amount, bill_headers.remain_amount, bill_headers.status").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单").Find(&el).Error
 	if err != nil {
 		return msg.GetFail, el, false
 	}

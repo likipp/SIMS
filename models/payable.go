@@ -2,7 +2,11 @@ package models
 
 import (
 	"SIMS/global"
+	"SIMS/internal/entity"
 	"SIMS/utils/msg"
+	"fmt"
+	"gorm.io/gorm"
+	"time"
 )
 
 type Payable struct {
@@ -17,9 +21,17 @@ type TotalAmount struct {
 	Sum int `json:"sum"`
 }
 
-//func GetPayableDB() *gorm.DB {
-//	return entity.GetDBWithModel(global.GDB, new(Payable))
-//}
+type PayList struct {
+	SourceBill int     `json:"source_bill"`
+	ThisAmount float32 `json:"this_amount"`
+	PayMethod  string  `json:"pay_method"`
+	CreatedAt *time.Time `json:"createdAt"`
+	Status     int    `json:"status"`
+}
+
+func GetPayableDB() *gorm.DB {
+	return entity.GetDBWithModel(global.GDB, new(Payable))
+}
 
 // CreatePayBill 创建应付单据
 func (p *Payable) CreatePayBill() (error, bool) {
@@ -59,4 +71,20 @@ func (p *Payable) CreatePayBill() (error, bool) {
 	}
 	tx.Commit()
 	return msg.CreatedSuccess, true
+}
+
+
+func GetPayList(param int) (error, []PayList, bool) {
+	db := GetPayableDB()
+	var payList []PayList
+	fmt.Println(param, "参数")
+	if param != 0 {
+		err := db.Select("payables.created_at,  payables.this_amount, bill_headers.status, payables.source_bill").Joins("JOIN bill_headers on payables.source_bill = bill_headers.id").Where("payables.source_bill = ?", param).Find(&payList).Error
+		if err != nil {
+			return msg.GetFail, payList, false
+		}
+		fmt.Println(payList, "错误消息")
+		return msg.GetSuccess, payList, true
+	}
+	return msg.GetFail, payList, false
 }
