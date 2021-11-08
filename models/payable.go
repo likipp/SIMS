@@ -22,11 +22,11 @@ type TotalAmount struct {
 }
 
 type PayList struct {
-	SourceBill int     `json:"source_bill"`
-	ThisAmount float32 `json:"this_amount"`
-	PayMethod  string  `json:"pay_method"`
-	CreatedAt *time.Time `json:"createdAt"`
-	Status     int    `json:"status"`
+	SourceBill int        `json:"source_bill"`
+	ThisAmount float32    `json:"this_amount"`
+	PayMethod  string     `json:"pay_method"`
+	CreatedAt  *time.Time `json:"createdAt"`
+	Status     int        `json:"status"`
 }
 
 func GetPayableDB() *gorm.DB {
@@ -73,13 +73,11 @@ func (p *Payable) CreatePayBill() (error, bool) {
 	return msg.CreatedSuccess, true
 }
 
-
 func GetPayList(param int) (error, []PayList, bool) {
 	db := GetPayableDB()
 	var payList []PayList
-	fmt.Println(param, "参数")
 	if param != 0 {
-		err := db.Select("payables.created_at,  payables.this_amount, bill_headers.status, payables.source_bill").Joins("JOIN bill_headers on payables.source_bill = bill_headers.id").Where("payables.source_bill = ?", param).Find(&payList).Error
+		err := db.Select("payables.pay_method, payables.created_at,  payables.this_amount, bill_headers.status, payables.source_bill").Joins("JOIN bill_headers on payables.source_bill = bill_headers.id").Where("payables.source_bill = ?", param).Find(&payList).Error
 		if err != nil {
 			return msg.GetFail, payList, false
 		}

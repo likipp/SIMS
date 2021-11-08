@@ -25,8 +25,7 @@ func CCreatePayBill(c *gin.Context) {
 }
 
 func CGetPayList(c *gin.Context) {
-	param := utils.StringConvInt(c.DefaultQuery("param", "17"))
-
+	param := utils.StringConvInt(c.Query("bill"))
 	err, data, success := services.SGetPayList(param)
 	if success {
 		msg.Result(data, err, 0, true, c)
