@@ -82,7 +82,7 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 			return err, false
 		}
 	}
-	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("total_amount", billTotal).Error
+	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
 		tx.Rollback()
 		return msg.CreatedFail, false

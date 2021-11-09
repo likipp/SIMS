@@ -5,6 +5,7 @@ import (
 	"SIMS/models"
 	"SIMS/services"
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
@@ -41,6 +42,7 @@ func CStockHeader(c *gin.Context) {
 	var sh models.BillHeader
 	var stock Bill
 	err := gins.ParseJSON(c, &stock)
+	fmt.Println(stock, "stock")
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 2, false, c)
 		return
