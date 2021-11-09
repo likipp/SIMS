@@ -5,7 +5,6 @@ import (
 	"SIMS/models"
 	"SIMS/services"
 	"SIMS/utils/msg"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
@@ -42,19 +41,18 @@ func CStockHeader(c *gin.Context) {
 	var sh models.BillHeader
 	var stock Bill
 	err := gins.ParseJSON(c, &stock)
-	fmt.Println(stock, "stock")
 	if err != nil {
-		msg.Result(nil, msg.QueryParamsFail, 2, false, c)
+		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
 		return
 	}
 	// 复制前端传递胡单据头信息到 sh BillHeader
 	if err = copier.Copy(&sh, stock); err != nil {
-		msg.Result(nil, msg.Copier, 2, false, c)
+		msg.Result(nil, msg.Copier, 1, false, c)
 		return
 	}
 	// 复制前端传递胡单据体信息到 sb BillEntry
 	if err = copier.Copy(&sb, stock.Body); err != nil {
-		msg.Result(nil, msg.Copier, 2, false, c)
+		msg.Result(nil, msg.Copier, 1, false, c)
 		return
 	}
 	err, success := services.SStockHeader(sh, sb)

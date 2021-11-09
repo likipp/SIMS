@@ -5,6 +5,7 @@ import (
 	"SIMS/internal/entity"
 	"SIMS/internal/schema"
 	"SIMS/utils/msg"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gorm.io/gorm"
 	"time"
@@ -40,17 +41,29 @@ type ExStock struct {
 }
 
 type InStock struct {
-	ID       int                `json:"id"`
-	Number    string            `json:"number"`
-	Status   int                `json:"status"`
-	CreatedAt *time.Time        `json:"created_at"`
-	PayMethod string            `json:"pay_method"`
-	PNumber   string            `json:"p_number"`
-	PName     string            `json:"p_name"`
-	InQTY     string            `json:"in_qty"`
-	UnitPrice int               `json:"unit_price"`
-	BillAmount   float32        `json:"bill_amount"`
-	RemainAmount float32        `json:"remain_amount"`
+	ID           int        `json:"id"`
+	Number       string     `json:"number"`
+	Status       int        `json:"status"`
+	CreatedAt    *time.Time `json:"created_at"`
+	PayMethod    string     `json:"pay_method"`
+	PNumber      string     `json:"p_number"`
+	PName        string     `json:"p_name"`
+	InQTY        string     `json:"in_qty"`
+	UnitPrice    float32    `json:"unit_price"`
+	BillAmount   float32    `json:"bill_amount"`
+	RemainAmount float32    `json:"remain_amount"`
+}
+
+type InStockQueryParams struct {
+	schema.PaginationParam
+	Sorter    string     `form:"sorter"`
+	PayMethod string     `form:"pay_method"`
+	Status    int        `form:"status"`
+	PNumber   string     `form:"p_number"`
+	PName     string     `form:"p_name"`
+	BeginTime *time.Time `form:"begin_time"`
+	EedTime   *time.Time `form:"end_time"`
+	Number    string     `form:"number"`
 }
 
 type ExListQueryParams struct {
@@ -147,11 +160,40 @@ func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 	return msg.GetSuccess, el, true
 }
 
-func GetInStockList() (error, []InStock, bool) {
+func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
 	var el []InStock
-	err := global.GDB.Select("bill_headers.id, bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_headers.bill_amount, bill_headers.remain_amount, bill_headers.status").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单").Find(&el).Error
+	db := global.GDB.Select("bill_headers.id, bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_headers.bill_amount, bill_headers.remain_amount, bill_headers.status").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单")
+	err := db.Error
 	if err != nil {
 		return msg.GetFail, el, false
+	}
+	if v := params.PNumber; v != "" {
+		if err = db.Where("p_number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.PName; v != "" {
+		if err = db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.PayMethod; v != "" {
+		if err = db.Where("pay_method = ?", v).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.Status; v == 0 || v == 1 {
+		if err = db.Where("status = ?", v).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.Number; v != "" {
+		if err = db.Where("number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if err = db.Find(&el).Error; err != nil {
+		return msg.GetFail, nil, false
 	}
 	return msg.GetSuccess, el, true
 }

@@ -7,6 +7,7 @@ import (
 	"SIMS/services"
 	"SIMS/utils"
 	"SIMS/utils/msg"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
@@ -122,7 +123,14 @@ func CGetExStockList(c *gin.Context) {
 }
 
 func CGetInStockList(c *gin.Context) {
-	err, list, success := services.SGetInStockList()
+	var params models.InStockQueryParams
+	err := gins.ParseQuery(c, &params)
+	fmt.Println("前段传递的数据", params)
+	if err != nil {
+		msg.Result(nil, err, 1, false, c)
+		return
+	}
+	err, list, success := services.SGetInStockList(params)
 	if !success {
 		msg.Result(nil, err, 2, false, c)
 		return

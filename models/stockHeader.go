@@ -39,9 +39,8 @@ func (sh *BillHeader) Validate() error {
 	err := validation.ValidateStruct(sh,
 		validation.Field(&sh.Number, validation.Required.Error("单号不能为空")),
 		validation.Field(&sh.StockType, validation.Required.Error("出入库类型不能为空")),
-		validation.Field(&sh.PayMethod, validation.Required.Error("收款方式不能为空")),
+		validation.Field(&sh.PayMethod, validation.When(sh.StockType == global.Ex, validation.Required.Error("收款方式不能为空"))),
 		validation.Field(&sh.Custom, validation.When(sh.StockType == global.Ex, validation.Required.Error("客户不能为空"))),
-		//validation.Field(&sh.Supplier, validation.When(sh.StockType == global.In, validation.Required.Error("供应商不能为空"))),
 	)
 	return err
 }
