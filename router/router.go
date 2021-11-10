@@ -32,7 +32,7 @@ func InitRouter() {
 		baseRouter.DELETE("couriers/:id", controller.ADeleteCourier)
 
 		// 客户等级路由
-		baseRouter.POST("custom-level", controller.CCreateCustomLevel)
+		baseRouter.POST("custom-level/", controller.CCreateCustomLevel)
 		baseRouter.GET("custom-level/", controller.GetCustomLevelList)
 
 		// 客户路由

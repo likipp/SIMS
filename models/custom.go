@@ -49,17 +49,17 @@ func GetCustomDB() *gorm.DB {
 	return entity.GetDBWithModel(global.GDB, new(Custom))
 }
 
-func (c *Custom) CreateCustom() (err error) {
+func (c *Custom) CreateCustom() (err error, success bool) {
 	db := GetCustomDB()
 	err = entity.CheckExist(db, "c_name", c.CName)
 	if err != nil {
-		return err
+		return err, false
 	}
 	err = db.Create(&c).Error
 	if err != nil {
-		return msg.CreatedFail
+		return msg.CreatedFail, false
 	}
-	return nil
+	return msg.CreatedSuccess, true
 }
 
 func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, List []CustomWithLevel, total int64) {

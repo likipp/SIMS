@@ -45,9 +45,10 @@ type ProductQueryResult struct {
 	PName   string  `json:"p_name"`
 	PNumber string  `json:"p_number"`
 	Spec    string  `json:"p_spec"`
-	Price   float32 `json:"price"`
+	Price   float32 `json:"p_price"`
 	Brand   int     `json:"brand"`
 	Unit    int     `json:"unit"`
+	WareHouse int   `json:"ware_house"`
 	Mark    string  `json:"mark"`
 	Picture string
 }

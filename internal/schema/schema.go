@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -47,19 +48,19 @@ func QueryPaging(pp PaginationParam) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func QueryOrder(po interface{}) func(db *gorm.DB) *gorm.DB {
+func QueryOrder(po map[string]interface{}) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		//data, ok := po.(map[string]interface{})
-		//if !ok {
-		//	return db
-		//}
-		//for _, v := range data {
-		//	if v != "" {
-		//		return db.Order(v)
-		//	}
-		//}
-		if po != "" {
-			return db.Order(po)
+		if len(po) > 0 {
+			for i, v := range po {
+				if v == "ascend" {
+					v = "Asc"
+				}
+				if v == "descend" {
+					v = "Desc"
+				}
+				order := fmt.Sprintf("%s %s", i, v)
+				return db.Order(order)
+			}
 		}
 		return db
 	}

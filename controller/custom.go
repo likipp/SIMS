@@ -18,12 +18,12 @@ func CCreateCustom(c *gin.Context) {
 		msg.Result(nil, err, 0, false, c)
 		return
 	}
-	err, data := services.SCreateCustom(custom)
-	if err != nil {
+	err, success := services.SCreateCustom(custom)
+	if !success {
 		msg.Result(nil, err, 1, false, c)
 		return
 	}
-	msg.Result(data, err, 0, true, c)
+	msg.Result(nil, err, 0, true, c)
 	return
 }
 

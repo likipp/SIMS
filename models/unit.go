@@ -60,7 +60,7 @@ func GetUnitSelectList(param string) (err error, list []UnitSelect, success bool
 	if err = db.Find(&ul).Error; err != nil {
 		return msg.GetFail, list, false
 	}
-	for i, _ := range ul {
+	for i := range ul {
 		us.Value = strconv.Itoa(ul[i].ID)
 		us.Key = strconv.Itoa(ul[i].ID)
 		us.Label = ul[i].Name
