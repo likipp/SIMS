@@ -22,6 +22,12 @@ type CustomLevelQueryParams struct {
 	Discount int    `form:"discount"`
 }
 
+type CustomLevelSelect struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
+	Key   string `json:"key"`
+}
+
 func GetCustomLevelDB(db *gorm.DB) *gorm.DB {
 	return entity.GetDBWithModel(db, new(CustomLevel))
 }
@@ -83,4 +89,25 @@ func (c *CustomLevel) DeleteCustomLevel() (err error) {
 		return msg.DeletedFail
 	}
 	return err
+}
+
+func GetCustomLevelSelectList(param string) (err error, list []CustomLevelSelect, success bool) {
+	var cls []CustomLevelSelect
+	//var psl []Products
+	con := fmt.Sprintf("%s%s%s", "%", param, "%")
+	var selectData = "name as label, id as value"
+	db := GetCustomLevelDB(global.GDB)
+	if param != "" {
+		err = db.Select(selectData).Where("name like ?", con).Find(&cls).Error
+		if err != nil {
+			return msg.GetFail, list, false
+		}
+	}
+	if err = db.Select(selectData).Find(&cls).Error; err != nil {
+		return msg.GetFail, list, false
+	}
+	for i, _ := range cls {
+		cls[i].Key = cls[i].Value
+	}
+	return msg.GetSuccess, cls, true
 }

@@ -63,3 +63,21 @@ func CGetCustomListWithQuery(c *gin.Context) {
 	msg.Result(customs, err, 1, true, c)
 	return
 }
+
+func CUpdateCustom(c *gin.Context) {
+	var custom models.Custom
+	err := gins.ParseJSON(c, &custom)
+	if err != nil {
+		msg.Result(nil, err, 1, false, c)
+		return
+	}
+	// 获取到UUID, 只有uuid有值时才能更新成功
+	id := c.Param("id")
+	custom.ID = utils.StringConvInt(id)
+	err, success := custom.UpdateCustom()
+	if !success {
+		msg.Result(nil, err, 1, success, c)
+		return
+	}
+	msg.Result(nil, err, 0, true, c)
+}

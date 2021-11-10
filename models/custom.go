@@ -107,3 +107,12 @@ func GetCustomsListWithQuery(param string) (err error, list []CustomSelect, succ
 	}
 	return msg.GetSuccess, cs, true
 }
+
+func (c *Custom) UpdateCustom() (err error, success bool) {
+	db := GetCustomDB()
+	err = db.Where("id = ?", c.ID).Updates(&c).Error
+	if err != nil {
+		return msg.UpdatedFail, false
+	}
+	return msg.UpdatedSuccess, true
+}

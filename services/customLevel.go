@@ -27,3 +27,8 @@ func SDeleteCustomLevel(c *models.CustomLevel) (err error) {
 	err = c.DeleteCustomLevel()
 	return err
 }
+
+func SGetCustomLevelSelectList(param string) (err error, cls []models.CustomLevelSelect, success bool) {
+	err, cls, success = models.GetCustomLevelSelectList(param)
+	return err, cls, success
+}

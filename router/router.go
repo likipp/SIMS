@@ -34,11 +34,13 @@ func InitRouter() {
 		// 客户等级路由
 		baseRouter.POST("custom-level/", controller.CCreateCustomLevel)
 		baseRouter.GET("custom-level/", controller.GetCustomLevelList)
+		baseRouter.GET("custom-level-select/", controller.CGetCustomLevelSelectList)
 
 		// 客户路由
 		baseRouter.POST("custom", controller.CCreateCustom)
 		baseRouter.GET("customQuery", controller.CGetCustomListWithQuery)
 		baseRouter.GET("custom/", controller.CGetCustomList)
+		baseRouter.PATCH("custom/:id", controller.CUpdateCustom)
 		//baseRouter.GET("custom/", controller.CGetCustomByID)
 
 		// 品牌路由

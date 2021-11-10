@@ -39,3 +39,17 @@ func GetCustomLevelList(c *gin.Context) {
 	}
 	msg.ResultWithPageInfo(list, err, 1, success, total, params.Current, params.PageSize, c)
 }
+
+func CGetCustomLevelSelectList(c *gin.Context) {
+	var cls []models.CustomLevelSelect
+	param := c.DefaultQuery("param", "")
+	if param == "{}" {
+		param = ""
+	}
+	err, cls, success := services.SGetCustomLevelSelectList(param)
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(cls, err, 1, true, c)
+}
