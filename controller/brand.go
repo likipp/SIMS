@@ -17,7 +17,7 @@ func CCreateBrand(c *gin.Context) {
 	}
 	err, data, success := services.SCreateBrand(brand)
 	if success {
-		msg.Result(data, err, 1, true, c)
+		msg.Result(data, err, 0, true, c)
 		return
 	}
 	msg.Result(nil, err, 2, false, c)
@@ -34,7 +34,7 @@ func CGetBrandSelectList(c *gin.Context) {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	msg.Result(units, err, 1, true, c)
+	msg.Result(units, err, 0, true, c)
 }
 
 func CGetBrandTree(c *gin.Context) {
@@ -43,5 +43,5 @@ func CGetBrandTree(c *gin.Context) {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	msg.Result(list, err, 1, true, c)
+	msg.Result(list, err, 0, true, c)
 }

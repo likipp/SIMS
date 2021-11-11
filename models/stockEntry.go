@@ -35,13 +35,11 @@ func (be *BillEntry) Validate() error {
 		validation.Field(&be.Cost, validation.Required.Error("成本不能为空")),
 		validation.Field(&be.Profit, validation.Required.Error("利润不能为空")),
 		validation.Field(&be.Total, validation.Required.Error("金额不能为空")),
-		//validation.Field(&sb.InQTY, validation.When(s.StockType == global.In, validation.Required.Error("数量不能为空"))),
-		//validation.Field(&sb.ExQTY, validation.When(s.StockType != global.In, validation.Required.Error("数量不能为空"))),
 	)
 	return err
 }
 
-// InStockLog 入库碟事务日志
+// InStockLog 入库单事务日志
 func (be *BillEntry) InStockLog(tx *gorm.DB) (err error, success bool) {
 	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
 	if stock.QTY > 0 {
@@ -70,6 +68,7 @@ func (be *BillEntry) InStockLog(tx *gorm.DB) (err error, success bool) {
 	return msg.CreatedSuccess, true
 }
 
+// ExStockLog 出库单事务日志
 func (be *BillEntry) ExStockLog(tx *gorm.DB) (err error, success bool) {
 	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
 	if stock.QTY > 0 {

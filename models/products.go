@@ -78,6 +78,9 @@ func GetProductsDB() *gorm.DB {
 func (p *Products) CreateProducts() (err error, success bool) {
 	db := GetProductsDB()
 	err = entity.CheckExist(db, "p_name", p.PName)
+	if err != nil {
+		return msg.DuplicatedData, false
+	}
 	err = db.Create(p).Error
 	if err != nil {
 		return msg.CreatedFail, false
@@ -132,8 +135,6 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 	if err != nil {
 		return msg.Copier, nil, 0, false
 	}
-	//order := utils.StructConvMap(params.ProductOrder)
-	//, schema.QueryOrder(params.Sorter)
 	db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&List)
 
 	if err != nil {

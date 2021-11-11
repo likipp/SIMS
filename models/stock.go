@@ -212,11 +212,6 @@ func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
 			return msg.GetFail, nil, false
 		}
 	}
-	//if v := params.PayMethod; v != "" {
-	//	if err = db.Where("pay_method = ?", v).Error; err != nil {
-	//		return msg.GetFail, nil, false
-	//	}
-	//}
 	if v := params.Status; v < 2 {
 		if err = db.Where("status = ?", v).Error; err != nil {
 			return msg.GetFail, nil, false

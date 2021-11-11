@@ -33,4 +33,7 @@ var (
 	ExpectationFailed    = errors.New("未登录或token已过期")
 	PaginationFailed     = errors.New("分页失败")
 	AmountSuccess        = errors.New("货款已结清")
+	PictureUploadFailed  = errors.New("图片上传失败")
+	PictureExtFailed     = errors.New("上传失败!只允许png,jpg,gif,jpeg文件")
+	Exists               = errors.New("数据已经存在")
 )

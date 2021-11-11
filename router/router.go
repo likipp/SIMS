@@ -61,6 +61,7 @@ func InitRouter() {
 		baseRouter.GET("product/", controller.CGetProductsList)
 		baseRouter.GET("product-select/", controller.CGetProductsSelectList)
 		baseRouter.PATCH("product/:id", controller.CUpdateProduct)
+		baseRouter.POST("product-number/", controller.CGenerateProductNumber)
 
 		// 库存路由
 		//baseRouter.POST("stock/", controller.CStockCount)
@@ -68,6 +69,7 @@ func InitRouter() {
 		baseRouter.GET("generate-number/", controller.CGenerateNumber)
 		// 创建出入库单据
 		baseRouter.POST("stock/", controller.CStockHeader)
+		baseRouter.DELETE("stock/:id/", controller.CDeleteBill)
 		baseRouter.GET("stock/", controller.CGetStockList)
 		baseRouter.GET("stock/ex/", controller.CGetExStockList)
 		baseRouter.GET("stock/in", controller.CGetInStockList)

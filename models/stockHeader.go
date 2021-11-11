@@ -29,7 +29,7 @@ type ExBillDetail struct {
 	Body []BillEntry `json:"body"`
 }
 
-// InBillDetail 入库碟详情
+// InBillDetail 入库单详情
 type InBillDetail struct {
 	BillHeader
 	Body []BillEntry `json:"body"`
@@ -47,13 +47,12 @@ func (sh *BillHeader) Validate() error {
 
 func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	var billTotal float32
+	var total int64
 	// 校验字段是否满足条件
 	err = validation.Validate(sh, validation.NotNil)
 	if err != nil {
 		return err, false
 	}
-	// 开始数据库事务
-	tx := global.GDB.Begin()
 	// 创建单据表头信息
 	if sh.StockType == "出库单" {
 		sh.Status = 1
@@ -61,33 +60,79 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		sh.Status = 0
 		sh.RemainAmount = 0
 	}
+	// 开始数据库事务
+	tx := global.GDB.Begin()
+	// 先判断单据号是否存在, 如果存在, 不允许继续新建
+	tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Count(&total)
+	if total > 0 {
+		return msg.Exists, false
+	}
+	// 开始创建订单表头信息, 不成功, 回滚不继续执行
 	if err = tx.Create(&sh).Error; err != nil {
-		tx.Rollback()
+		//tx.Rollback()
 		return msg.CreatedFail, false
 	}
 	// 循环表体明细, 根据单据类型, 更新库存数据
 	for i := range sb {
+		// 绑定订单表体与订单表头的关联信息
 		sb[i].HeaderID = sh.ID
+		// 判断出入库类型, 如果类型属于入库, 则执行InStockLog方法
 		if sh.StockType == global.In {
 			err, success = sb[i].InStockLog(tx)
 			if !success {
 				return err, false
 			}
+			// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
 			billTotal += sb[i].Total
 			continue
 		}
+		// 判断出入库类型, 如果类型属于出库, ExStockLog
 		err, success = sb[i].ExStockLog(tx)
 		if !success {
 			return err, false
 		}
 	}
+	// 执行订单表头总金额数据
 	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
-		tx.Rollback()
+		//tx.Rollback()
 		return msg.CreatedFail, false
 	}
+	//
 	tx.Commit()
 	return err, true
+}
+
+func DeleteBillByID(id int) (err error, success bool) {
+	var sh BillHeader
+	var sb []BillEntry
+	err = global.GDB.Where("id = ?", id).Find(&sh).Error
+	if err != nil {
+		return msg.GetFail, false
+	}
+	err = global.GDB.Where("header_id = ?", id).Find(&sb).Error
+	if err != nil {
+		return msg.GetFail, false
+	}
+
+	tx := global.GDB.Begin()
+	for _, v := range sb {
+		stock := GetWareHouseQtyWithProduct(v.WareHouse, v.PNumber)
+		if stock.QTY < v.InQTY {
+			return msg.ExGTStock, false
+		}
+		if err = tx.Delete(&sb).Error; err != nil {
+			return msg.DeletedFail, false
+		}
+		if err = tx.Model(stock).Update("qty", stock.QTY - v.InQTY).Error; err != nil {
+			return msg.UpdatedFail, false
+		}
+	}
+	if err = tx.Delete(&sh).Error; err != nil {
+		return msg.DeletedFail, false
+	}
+	tx.Commit()
+	return msg.DeletedSuccess, false
 }
 
 // GetExBillDetail 获取出库订单详情信息

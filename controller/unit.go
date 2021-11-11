@@ -41,5 +41,5 @@ func CGetUnitSelectList(c *gin.Context) {
 		msg.Result(nil, err, 2, false, c)
 		return
 	}
-	msg.Result(units, err, 1, true, c)
+	msg.Result(units, err, 0, true, c)
 }

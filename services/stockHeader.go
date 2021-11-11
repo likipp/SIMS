@@ -2,8 +2,13 @@ package services
 
 import "SIMS/models"
 
-func SStockHeader(sh models.BillHeader, sb []models.BillEntry) (er error, success bool) {
-	err, success := sh.BillLog(sb)
+func SStockHeader(sh models.BillHeader, sb []models.BillEntry) (err error, success bool) {
+	err, success = sh.BillLog(sb)
+	return err, success
+}
+
+func SDeleteBillByID(id int) (err error, success bool) {
+	err, success = models.DeleteBillByID(id)
 	return err, success
 }
 
