@@ -5,6 +5,7 @@ import (
 	"SIMS/utils/msg"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jinzhu/copier"
+	"gorm.io/gorm"
 )
 
 // BillHeader 单据头
@@ -65,11 +66,12 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	// 先判断单据号是否存在, 如果存在, 不允许继续新建
 	tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Count(&total)
 	if total > 0 {
+		tx.Rollback()
 		return msg.Exists, false
 	}
 	// 开始创建订单表头信息, 不成功, 回滚不继续执行
 	if err = tx.Create(&sh).Error; err != nil {
-		//tx.Rollback()
+		tx.Rollback()
 		return msg.CreatedFail, false
 	}
 	// 循环表体明细, 根据单据类型, 更新库存数据
@@ -80,6 +82,7 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		if sh.StockType == global.In {
 			err, success = sb[i].InStockLog(tx)
 			if !success {
+				tx.Rollback()
 				return err, false
 			}
 			// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
@@ -89,24 +92,24 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		// 判断出入库类型, 如果类型属于出库, ExStockLog
 		err, success = sb[i].ExStockLog(tx)
 		if !success {
+			tx.Rollback()
 			return err, false
 		}
 	}
 	// 执行订单表头总金额数据
 	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
-		//tx.Rollback()
+		tx.Rollback()
 		return msg.CreatedFail, false
 	}
-	//
 	tx.Commit()
-	return err, true
+	return msg.CreatedSuccess, true
 }
 
 func DeleteBillByID(id int) (err error, success bool) {
 	var sh BillHeader
 	var sb []BillEntry
-	err = global.GDB.Where("id = ?", id).Find(&sh).Error
+	err = global.GDB.Model(&BillHeader{}).Where("id = ?", id).Find(&sh).Error
 	if err != nil {
 		return msg.GetFail, false
 	}
@@ -118,21 +121,187 @@ func DeleteBillByID(id int) (err error, success bool) {
 	tx := global.GDB.Begin()
 	for _, v := range sb {
 		stock := GetWareHouseQtyWithProduct(v.WareHouse, v.PNumber)
-		if stock.QTY < v.InQTY {
-			return msg.ExGTStock, false
+		if sh.StockType == global.In {
+			if stock.QTY < v.InQTY {
+				tx.Rollback()
+				return msg.ExGTStock, false
+			}
+			if err = tx.Delete(&sb).Error; err != nil {
+				tx.Rollback()
+				return msg.DeletedFail, false
+			}
+			if stock.QTY - v.InQTY == 0 {
+				if err = tx.Delete(&stock).Error; err != nil {
+					tx.Rollback()
+					return msg.DeletedFail, false
+				}
+			}
+			if err = tx.Model(stock).Update("qty", stock.QTY - v.InQTY).Error; err != nil {
+				tx.Rollback()
+				return msg.UpdatedFail, false
+			}
 		}
 		if err = tx.Delete(&sb).Error; err != nil {
+			tx.Rollback()
 			return msg.DeletedFail, false
 		}
-		if err = tx.Model(stock).Update("qty", stock.QTY - v.InQTY).Error; err != nil {
+		if err = tx.Model(stock).Update("qty", stock.QTY + v.ExQTY).Error; err != nil {
+			tx.Rollback()
 			return msg.UpdatedFail, false
 		}
 	}
 	if err = tx.Delete(&sh).Error; err != nil {
+		tx.Rollback()
 		return msg.DeletedFail, false
 	}
 	tx.Commit()
 	return msg.DeletedSuccess, false
+}
+
+func UpdateData(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY int,  billTotal float32) (err error, success bool) {
+	if err = tx.Model(Nsb).Updates(Nsb).Error; err != nil {
+		tx.Rollback()
+		return msg.UpdatedFail, false
+	}
+	if err = tx.Model(stock).Update("qty", QTY).Error; err != nil {
+		tx.Rollback()
+		return msg.UpdatedFail, false
+	}
+	if sh.BillAmount != billTotal {
+		if err = tx.Model(sh).Update("bill_amount", billTotal).Error; err != nil {
+			tx.Rollback()
+			return msg.UpdatedFail, false
+		}
+	}
+	return msg.UpdatedSuccess, true
+}
+
+// UpdateBillByID 待完成
+func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
+	var sh BillHeader
+	var sbOld []BillEntry
+	var billTotal float32
+	for _, v := range sb {
+		billTotal += v.Total
+	}
+	tx := global.GDB.Begin()
+	// 通过ID值获取到对应的表单头部数据
+	if err = tx.Where("id = ?", id).Find(&sh).Error; err != nil {
+		return msg.GetFail, false
+	}
+	// 通过HeaderID获取对应的表单明细数据
+	if err = tx.Where("header_id = ?", sh.ID).Find(&sbOld).Error; err != nil {
+		return msg.GetFail, false
+	}
+	// 如果前端传递的明细行数量小于原始数据, 走小于逻辑的判断
+	if len(sbOld) >= len(sb) {
+		// 循环原始数据
+		for i := 0; i < len(sbOld); i++ {
+			// 获取明细行产品的库存信息
+			stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber)
+			// 如果原始数据与新数据的产品是一样的, 就只查看仓库, 数量, 单价是否变更
+			if sbOld[i].PNumber == sb[i].PNumber {
+				// 判断仓库是否一样, 如果一样, 更新数量, 单价, 金额
+				if sbOld[i].WareHouse == sb[i].WareHouse {
+					// 如果原始数据的入库数量大于新数据的入库数量
+					if sbOld[i].InQTY > sb[i].InQTY {
+						// 如果产品的库存数量小于（原始数据-新数据的数量), 则说明库存不足以修改, 报错返回
+						if stock.QTY < sbOld[i].InQTY - sb[i].InQTY {
+							return msg.ExGTStock, false
+						}
+						err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY - (sbOld[i].InQTY - sb[i].InQTY), billTotal)
+						if !success {
+							return err, false
+						}
+						continue
+					}
+					err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY + (sb[i].InQTY - sbOld[i].InQTY), billTotal)
+					if !success {
+						return err, false
+					}
+					continue
+				}
+
+				// 判断仓库发生变化
+				if stock.QTY < sbOld[i].InQTY {
+					return msg.ExGTStock, false
+				}
+				if stock.QTY == sbOld[i].InQTY {
+					if err = tx.Delete(&stock).Error; err != nil {
+						return msg.DeletedFail, false
+					}
+				}
+				err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY + (sb[i].InQTY - sbOld[i].InQTY), billTotal)
+				if !success {
+					return err, false
+				}
+				continue
+			}
+			if stock.QTY < sbOld[i].InQTY {
+				return msg.ExGTStock, false
+			}
+			if err = tx.Delete(sbOld[i]).Error; err != nil {
+				return msg.DeletedFail, false
+			}
+			if err = tx.Create(&sb[i]).Error; err != nil {
+				return msg.CreatedFail, false
+			}
+			if err = tx.Model(stock).Update("qty", stock.QTY + (sb[i].InQTY - sbOld[i].InQTY)).Error; err != nil {
+				return msg.UpdatedFail, false
+			}
+			if sh.BillAmount != billTotal {
+				if err = tx.Model(sh).Update("bill_amount", billTotal).Error; err != nil {
+					return msg.UpdatedFail, false
+				}
+			}
+		}
+	}
+	//for i := 0; i < len(sb); i++ {
+	//	stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber)
+	//	if sbOld[i].PNumber == sb[i].PNumber {
+	//		if sbOld[i].WareHouse == sb[i].WareHouse {
+	//			if sbOld[i].InQTY > sb[i].InQTY {
+	//				if stock.QTY < sbOld[i].InQTY - sb[i].InQTY {
+	//					return msg.ExGTStock, false
+	//				}
+	//				if err = tx.Model(sb[i]).Updates(sb[i]).Error; err != nil {
+	//					return msg.UpdatedFail, false
+	//				}
+	//				if err = tx.Model(stock).Update("qty", stock.QTY - (sbOld[i].InQTY - sb[i].InQTY)).Error; err != nil {
+	//					return msg.UpdatedFail, false
+	//				}
+	//			}
+	//			if err = tx.Model(sb[i]).Updates(sb[i]).Error; err != nil {
+	//				return msg.UpdatedFail, false
+	//			}
+	//			if err = tx.Model(stock).Update("qty", stock.QTY + (sb[i].InQTY - sbOld[i].InQTY)).Error; err != nil {
+	//				return msg.UpdatedFail, false
+	//			}
+	//		}
+	//		if stock.QTY < sbOld[i].InQTY {
+	//			return msg.ExGTStock, false
+	//		}
+	//		if stock.QTY == sbOld[i].InQTY {
+	//			if err = tx.Delete(&stock).Error; err != nil {
+	//				return msg.DeletedFail, false
+	//			}
+	//		}
+	//		if err = tx.Model(stock).Update("qty", stock.QTY - sbOld[i].InQTY).Error; err != nil {
+	//			return msg.UpdatedFail, false
+	//		}
+	//	}
+	//	if stock.QTY < sbOld[i].InQTY {
+	//		return msg.ExGTStock, false
+	//	}
+	//	if err = tx.Delete(sbOld[i]).Error; err != nil {
+	//		return msg.DeletedFail, false
+	//	}
+	//	if err = tx.Create(&sb[i]).Error; err != nil {
+	//		return msg.CreatedFail, false
+	//	}
+	//}
+	tx.Commit()
+	return msg.UpdatedSuccess, true
 }
 
 // GetExBillDetail 获取出库订单详情信息

@@ -76,6 +76,7 @@ func InitRouter() {
 		baseRouter.POST("stock/:id/", controller.CSChangeStock)
 		baseRouter.GET("ex-bill/", controller.CGetExBillDetail)
 		baseRouter.GET("in-bill/", controller.CGetInBillDetail)
+		baseRouter.PATCH("stock/:id", controller.CUpdateBillByID)
 
 		// 应付款单据
 		baseRouter.POST("payable/", controller.CCreatePayBill)

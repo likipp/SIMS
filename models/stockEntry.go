@@ -16,7 +16,7 @@ type BillEntry struct {
 	ExQTY      int     `json:"ex_qty" gorm:"comment:'出库数量'"`
 	InQTY      int     `json:"in_qty" gorm:"comment:'入库数量'"`
 	UnitPrice  float32 `json:"unit_price" gorm:"comment:'单价'"`
-	Discount   float32 `json:"discount" gorm:"折扣"`
+	//Discount   float32 `json:"discount" gorm:"折扣"`
 	ExDiscount float32 `json:"ex_discount" gorm:"comment:'会员折扣'"`
 	InDiscount float32 `json:"in_discount" gorm:"comment:'进货折扣'"`
 	Cost       float32 `json:"cost" gorm:"成本"`
