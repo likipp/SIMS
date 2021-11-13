@@ -4,7 +4,6 @@ import (
 	"SIMS/internal/gins"
 	"SIMS/models"
 	"SIMS/services"
-	"SIMS/utils"
 	"SIMS/utils/msg"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -60,7 +59,6 @@ func CStockHeader(c *gin.Context) {
 		return
 	}
 	err, success := services.SStockHeader(sh, sb)
-	fmt.Println(err, "错误提醒")
 	if success {
 		msg.Result(nil, err, 0, true, c)
 		return
@@ -70,9 +68,9 @@ func CStockHeader(c *gin.Context) {
 }
 
 func CDeleteBill(c *gin.Context) {
-	id := utils.StringConvInt(c.Param("id"))
-	fmt.Println(id, "id")
-	err, success := services.SDeleteBillByID(id)
+	number := c.Param("number")
+	fmt.Println(number, "number")
+	err, success := services.SDeleteBillByID(number)
 	if success {
 		msg.Result(nil, err, 0, true, c)
 	}

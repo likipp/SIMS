@@ -95,12 +95,12 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 	con := fmt.Sprintf("%s%s%s", "%", param, "%")
 	db := GetProductsDB()
 	if param != "" {
-		err = db.Where("p_number like ?", con).Or("p_name like ?", con).Find(&psl).Error
+		err = db.Where("p_number like ?", con).Or("p_name like ?", con).Order("brand").Order("p_number").Find(&psl).Error
 		if err != nil {
 			return msg.GetFail, list, false
 		}
 	}
-	if err = db.Find(&psl).Error; err != nil {
+	if err = db.Order("brand").Order("p_number").Find(&psl).Error; err != nil {
 		return msg.GetFail, list, false
 	}
 	for _, pro := range psl {

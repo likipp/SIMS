@@ -3,6 +3,7 @@ package models
 import (
 	"SIMS/global"
 	"SIMS/utils/msg"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
@@ -74,9 +75,21 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		tx.Rollback()
 		return msg.CreatedFail, false
 	}
+	fmt.Println(sb, "修改前")
+	for i := 0; i < len(sb); i++ {
+		//for y := 1; y < len(sb); y++ {
+		//	if sb[i].PNumber == sb[y].PNumber {
+		//		fmt.Println(sb[i].PNumber, "sb[i].PNumber")
+		//		fmt.Println(sb[y].PNumber, "sb[y].PNumber")
+		//		sb[i].InQTY = sb[i].InQTY + sb[y].InQTY
+		//	}
+		//}
+	}
+	fmt.Println(sb, "修改后")
 	// 循环表体明细, 根据单据类型, 更新库存数据
 	for i := range sb {
 		// 绑定订单表体与订单表头的关联信息
+
 		sb[i].HeaderID = sh.ID
 		// 判断出入库类型, 如果类型属于入库, 则执行InStockLog方法
 		if sh.StockType == global.In {
@@ -102,18 +115,19 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		tx.Rollback()
 		return msg.CreatedFail, false
 	}
-	tx.Commit()
+	//tx.Commit()
 	return msg.CreatedSuccess, true
 }
 
-func DeleteBillByID(id int) (err error, success bool) {
+func DeleteBillByID(number string) (err error, success bool) {
 	var sh BillHeader
 	var sb []BillEntry
-	err = global.GDB.Model(&BillHeader{}).Where("id = ?", id).Find(&sh).Error
+	err = global.GDB.Model(&BillHeader{}).Where("number = ?", number).Find(&sh).Error
+	fmt.Println(sh.ID, sh.Number)
 	if err != nil {
 		return msg.GetFail, false
 	}
-	err = global.GDB.Where("header_id = ?", id).Find(&sb).Error
+	err = global.GDB.Where("header_id = ?", sh.ID).Find(&sb).Error
 	if err != nil {
 		return msg.GetFail, false
 	}
@@ -155,7 +169,7 @@ func DeleteBillByID(id int) (err error, success bool) {
 		return msg.DeletedFail, false
 	}
 	tx.Commit()
-	return msg.DeletedSuccess, false
+	return msg.DeletedSuccess, true
 }
 
 func UpdateData(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY int,  billTotal float32) (err error, success bool) {

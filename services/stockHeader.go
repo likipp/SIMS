@@ -7,8 +7,8 @@ func SStockHeader(sh models.BillHeader, sb []models.BillEntry) (err error, succe
 	return err, success
 }
 
-func SDeleteBillByID(id int) (err error, success bool) {
-	err, success = models.DeleteBillByID(id)
+func SDeleteBillByID(number string) (err error, success bool) {
+	err, success = models.DeleteBillByID(number)
 	return err, success
 }
 

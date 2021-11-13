@@ -17,7 +17,7 @@ func GenerateNumber(t string) (n string) {
 	var buf bytes.Buffer
 	timeNow := time.Now().Format("20060102")
 	timeParam := fmt.Sprintf("%s%s%s", "%", timeNow, "%")
-	global.GDB.Where("stock_type = ? and number like ?", t, timeParam).Limit(1).Order("number").Find(&s).Count(&total)
+	global.GDB.Where("stock_type = ? and number like ?", t, timeParam).Order("number desc").Last(&s).Count(&total)
 	//global.GDB.Raw("select number from bill_headers where stock_type = ? and number like ? order by number desc limit 1", t, timeParam).Scan(&s).Count(&total)
 	if total > 0 {
 		number := s.Number
