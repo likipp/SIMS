@@ -50,6 +50,8 @@ func (sh *BillHeader) Validate() error {
 func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	var billTotal float32
 	var total int64
+	var newSB []BillEntry
+	var stockMap = make(map[string]int, 10)
 	// 校验字段是否满足条件
 	err = validation.Validate(sh, validation.NotNil)
 	if err != nil {
@@ -77,19 +79,37 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	}
 	fmt.Println(sb, "修改前")
 	for i := 0; i < len(sb); i++ {
-		//for y := 1; y < len(sb); y++ {
-		//	if sb[i].PNumber == sb[y].PNumber {
-		//		fmt.Println(sb[i].PNumber, "sb[i].PNumber")
-		//		fmt.Println(sb[y].PNumber, "sb[y].PNumber")
-		//		sb[i].InQTY = sb[i].InQTY + sb[y].InQTY
-		//	}
-		//}
+		if len(newSB) == 0 {
+			newSB = append(newSB, sb[i])
+			continue
+		}
+		for y, length := 0, len(newSB); y < length; y++ {
+			if sb[i].PNumber == newSB[y].PNumber {
+				newSB[y].InQTY = newSB[y].InQTY + sb[i].InQTY
+			} else {
+				newSB = append(newSB, sb[i])
+			}
+		}
 	}
-	fmt.Println(sb, "修改后")
+	for i, length := 0, len(sb); i < length; i++ {
+		if len(stockMap) == 0 {
+			stock := GetWareHouseQtyWithProduct(sb[i].WareHouse, sb[i].PNumber)
+			stockMap[sb[i].PNumber] = stock.QTY + sb[i].InQTY
+			continue
+		}
+		fmt.Println(stockMap, "第一次map", stockMap[sb[i].PNumber])
+		if _, ok := stockMap[sb[i].PNumber]; ok {
+			stockMap[sb[i].PNumber] = stockMap[sb[i].PNumber] + sb[i].InQTY
+		} else {
+			stockMap[sb[i].PNumber] = sb[i].InQTY
+			fmt.Println(len(stockMap), "最后map的长度")
+		}
+	}
+
+	fmt.Println(newSB, "修改后")
 	// 循环表体明细, 根据单据类型, 更新库存数据
 	for i := range sb {
 		// 绑定订单表体与订单表头的关联信息
-
 		sb[i].HeaderID = sh.ID
 		// 判断出入库类型, 如果类型属于入库, 则执行InStockLog方法
 		if sh.StockType == global.In {
@@ -109,6 +129,7 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 			return err, false
 		}
 	}
+	fmt.Println(stockMap, "map数据")
 	// 执行订单表头总金额数据
 	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
@@ -116,6 +137,7 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		return msg.CreatedFail, false
 	}
 	//tx.Commit()
+	tx.Rollback()
 	return msg.CreatedSuccess, true
 }
 
@@ -144,13 +166,13 @@ func DeleteBillByID(number string) (err error, success bool) {
 				tx.Rollback()
 				return msg.DeletedFail, false
 			}
-			if stock.QTY - v.InQTY == 0 {
+			if stock.QTY-v.InQTY == 0 {
 				if err = tx.Delete(&stock).Error; err != nil {
 					tx.Rollback()
 					return msg.DeletedFail, false
 				}
 			}
-			if err = tx.Model(stock).Update("qty", stock.QTY - v.InQTY).Error; err != nil {
+			if err = tx.Model(stock).Update("qty", stock.QTY-v.InQTY).Error; err != nil {
 				tx.Rollback()
 				return msg.UpdatedFail, false
 			}
@@ -159,7 +181,7 @@ func DeleteBillByID(number string) (err error, success bool) {
 			tx.Rollback()
 			return msg.DeletedFail, false
 		}
-		if err = tx.Model(stock).Update("qty", stock.QTY + v.ExQTY).Error; err != nil {
+		if err = tx.Model(stock).Update("qty", stock.QTY+v.ExQTY).Error; err != nil {
 			tx.Rollback()
 			return msg.UpdatedFail, false
 		}
@@ -172,7 +194,7 @@ func DeleteBillByID(number string) (err error, success bool) {
 	return msg.DeletedSuccess, true
 }
 
-func UpdateData(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY int,  billTotal float32) (err error, success bool) {
+func UpdateData(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY int, billTotal float32) (err error, success bool) {
 	if err = tx.Model(Nsb).Updates(Nsb).Error; err != nil {
 		tx.Rollback()
 		return msg.UpdatedFail, false
@@ -220,16 +242,16 @@ func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
 					// 如果原始数据的入库数量大于新数据的入库数量
 					if sbOld[i].InQTY > sb[i].InQTY {
 						// 如果产品的库存数量小于（原始数据-新数据的数量), 则说明库存不足以修改, 报错返回
-						if stock.QTY < sbOld[i].InQTY - sb[i].InQTY {
+						if stock.QTY < sbOld[i].InQTY-sb[i].InQTY {
 							return msg.ExGTStock, false
 						}
-						err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY - (sbOld[i].InQTY - sb[i].InQTY), billTotal)
+						err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY-(sbOld[i].InQTY-sb[i].InQTY), billTotal)
 						if !success {
 							return err, false
 						}
 						continue
 					}
-					err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY + (sb[i].InQTY - sbOld[i].InQTY), billTotal)
+					err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY+(sb[i].InQTY-sbOld[i].InQTY), billTotal)
 					if !success {
 						return err, false
 					}
@@ -245,7 +267,7 @@ func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
 						return msg.DeletedFail, false
 					}
 				}
-				err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY + (sb[i].InQTY - sbOld[i].InQTY), billTotal)
+				err, success = UpdateData(tx, sb[i], sh, *stock, stock.QTY+(sb[i].InQTY-sbOld[i].InQTY), billTotal)
 				if !success {
 					return err, false
 				}
@@ -260,7 +282,7 @@ func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
 			if err = tx.Create(&sb[i]).Error; err != nil {
 				return msg.CreatedFail, false
 			}
-			if err = tx.Model(stock).Update("qty", stock.QTY + (sb[i].InQTY - sbOld[i].InQTY)).Error; err != nil {
+			if err = tx.Model(stock).Update("qty", stock.QTY+(sb[i].InQTY-sbOld[i].InQTY)).Error; err != nil {
 				return msg.UpdatedFail, false
 			}
 			if sh.BillAmount != billTotal {
