@@ -90,11 +90,11 @@ func GetStockDB() *gorm.DB {
 	return entity.GetDBWithModel(global.GDB, new(Stock))
 }
 
-func GetWareHouseQtyWithProduct(wareHouse int, product string) *Stock {
+func GetWareHouseQtyWithProduct(wareHouse int, product string, tx *gorm.DB) *Stock {
 	var stock Stock
 	var count int64
-	db := GetStockDB()
-	db.Where("ware_house = ? and p_number = ?", wareHouse, product).Find(&stock).Count(&count)
+	//db := GetStockDB()
+	tx.Where("ware_house = ? and p_number = ?", wareHouse, product).Find(&stock).Count(&count)
 	if count > 0 {
 		return &stock
 	}

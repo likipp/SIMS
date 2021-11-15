@@ -38,7 +38,7 @@ func InitRouter() {
 
 		// 客户路由
 		baseRouter.POST("custom", controller.CCreateCustom)
-		baseRouter.GET("customQuery", controller.CGetCustomListWithQuery)
+		baseRouter.GET("customQuery/", controller.CGetCustomListWithQuery)
 		baseRouter.GET("custom/", controller.CGetCustomList)
 		baseRouter.PATCH("custom/:id", controller.CUpdateCustom)
 		//baseRouter.GET("custom/", controller.CGetCustomByID)

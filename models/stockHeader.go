@@ -50,8 +50,8 @@ func (sh *BillHeader) Validate() error {
 func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	var billTotal float32
 	var total int64
-	var newSB []BillEntry
-	var stockMap = make(map[string]int, 10)
+	//var newSB []BillEntry
+	//var stockMap = make(map[string]int, 10)
 	// 校验字段是否满足条件
 	err = validation.Validate(sh, validation.NotNil)
 	if err != nil {
@@ -66,53 +66,35 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	}
 	// 开始数据库事务
 	tx := global.GDB.Begin()
-	// 先判断单据号是否存在, 如果存在, 不允许继续新建
+	// 先判断单据号是否已经生成, 如果存在, 不允许继续新建
 	tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Count(&total)
 	if total > 0 {
-		tx.Rollback()
 		return msg.Exists, false
 	}
 	// 开始创建订单表头信息, 不成功, 回滚不继续执行
 	if err = tx.Create(&sh).Error; err != nil {
-		tx.Rollback()
 		return msg.CreatedFail, false
 	}
-	fmt.Println(sb, "修改前")
-	for i := 0; i < len(sb); i++ {
-		if len(newSB) == 0 {
-			newSB = append(newSB, sb[i])
-			continue
-		}
-		for y, length := 0, len(newSB); y < length; y++ {
-			if sb[i].PNumber == newSB[y].PNumber {
-				newSB[y].InQTY = newSB[y].InQTY + sb[i].InQTY
-			} else {
-				newSB = append(newSB, sb[i])
-			}
-		}
-	}
+	//for i := 0; i < len(sb); i++ {
+	//	if len(newSB) == 0 {
+	//		newSB = append(newSB, sb[i])
+	//		continue
+	//	}
+	//	for y, length := 0, len(newSB); y < length; y++ {
+	//		if sb[i].PNumber == newSB[y].PNumber {
+	//			newSB[y].InQTY = newSB[y].InQTY + sb[i].InQTY
+	//		} else {
+	//			newSB = append(newSB, sb[i])
+	//		}
+	//	}
+	//}
 	for i, length := 0, len(sb); i < length; i++ {
-		if len(stockMap) == 0 {
-			stock := GetWareHouseQtyWithProduct(sb[i].WareHouse, sb[i].PNumber)
-			stockMap[sb[i].PNumber] = stock.QTY + sb[i].InQTY
-			continue
-		}
-		fmt.Println(stockMap, "第一次map", stockMap[sb[i].PNumber])
-		if _, ok := stockMap[sb[i].PNumber]; ok {
-			stockMap[sb[i].PNumber] = stockMap[sb[i].PNumber] + sb[i].InQTY
-		} else {
-			stockMap[sb[i].PNumber] = sb[i].InQTY
-			fmt.Println(len(stockMap), "最后map的长度")
-		}
-	}
-
-	fmt.Println(newSB, "修改后")
-	// 循环表体明细, 根据单据类型, 更新库存数据
-	for i := range sb {
-		// 绑定订单表体与订单表头的关联信息
 		sb[i].HeaderID = sh.ID
-		// 判断出入库类型, 如果类型属于入库, 则执行InStockLog方法
+		//if len(stockMap) == 0 {
+		//}
+		//stock := GetWareHouseQtyWithProduct(sb[i].WareHouse, sb[i].PNumber, tx)
 		if sh.StockType == global.In {
+			//sb[i].InQTY = stock.QTY + sb[i].InQTY
 			err, success = sb[i].InStockLog(tx)
 			if !success {
 				tx.Rollback()
@@ -128,16 +110,65 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 			tx.Rollback()
 			return err, false
 		}
+		//continue
+		//if _, ok := stockMap[sb[i].PNumber]; ok {
+		//	stockMap[sb[i].PNumber] = stockMap[sb[i].PNumber] + sb[i].InQTY
+		//	if sh.StockType == global.In {
+		//		err, success = sb[i].InStockLog(tx)
+		//		if !success {
+		//			tx.Rollback()
+		//			return err, false
+		//		}
+		//		// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
+		//		billTotal += sb[i].Total
+		//		continue
+		//	}
+		//} else {
+		//	stockMap[sb[i].PNumber] = sb[i].InQTY
+		//	if sh.StockType == global.In {
+		//		err, success = sb[i].InStockLog(tx)
+		//		if !success {
+		//			tx.Rollback()
+		//			return err, false
+		//		}
+		//		// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
+		//		billTotal += sb[i].Total
+		//		continue
+		//	}
+		//}
 	}
-	fmt.Println(stockMap, "map数据")
+	//fmt.Println(newSB, "修改后")
+	//// 循环表体明细, 根据单据类型, 更新库存数据
+	//for i := range sb {
+	//	// 绑定订单表体与订单表头的关联信息
+	//	sb[i].HeaderID = sh.ID
+	//	// 判断出入库类型, 如果类型属于入库, 则执行InStockLog方法
+	//	if sh.StockType == global.In {
+	//		err, success = sb[i].InStockLog(tx)
+	//		if !success {
+	//			tx.Rollback()
+	//			return err, false
+	//		}
+	//		// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
+	//		billTotal += sb[i].Total
+	//		continue
+	//	}
+	//	// 判断出入库类型, 如果类型属于出库, ExStockLog
+	//	err, success = sb[i].ExStockLog(tx)
+	//	if !success {
+	//		tx.Rollback()
+	//		return err, false
+	//	}
+	//}
+	//fmt.Println(stockMap, "map数据")
 	// 执行订单表头总金额数据
 	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
 		tx.Rollback()
 		return msg.CreatedFail, false
 	}
-	//tx.Commit()
-	tx.Rollback()
+	tx.Commit()
+	//tx.Rollback()
 	return msg.CreatedSuccess, true
 }
 
@@ -156,7 +187,7 @@ func DeleteBillByID(number string) (err error, success bool) {
 
 	tx := global.GDB.Begin()
 	for _, v := range sb {
-		stock := GetWareHouseQtyWithProduct(v.WareHouse, v.PNumber)
+		stock := GetWareHouseQtyWithProduct(v.WareHouse, v.PNumber, tx)
 		if sh.StockType == global.In {
 			if stock.QTY < v.InQTY {
 				tx.Rollback()
@@ -234,7 +265,7 @@ func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
 		// 循环原始数据
 		for i := 0; i < len(sbOld); i++ {
 			// 获取明细行产品的库存信息
-			stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber)
+			stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber, tx)
 			// 如果原始数据与新数据的产品是一样的, 就只查看仓库, 数量, 单价是否变更
 			if sbOld[i].PNumber == sb[i].PNumber {
 				// 判断仓库是否一样, 如果一样, 更新数量, 单价, 金额

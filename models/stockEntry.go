@@ -41,7 +41,7 @@ func (be *BillEntry) Validate() error {
 
 // InStockLog 入库单事务日志
 func (be *BillEntry) InStockLog(tx *gorm.DB) (err error, success bool) {
-	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
+	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber, tx)
 	if stock.QTY > 0 {
 		stock.QTY = be.InQTY + stock.QTY
 		err, success = stock.UpdateStockWithTransaction(tx)
@@ -74,7 +74,7 @@ func (be *BillEntry) InStockLog(tx *gorm.DB) (err error, success bool) {
 
 // ExStockLog 出库单事务日志
 func (be *BillEntry) ExStockLog(tx *gorm.DB) (err error, success bool) {
-	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber)
+	stock := GetWareHouseQtyWithProduct(be.WareHouse, be.PNumber, tx)
 	if stock.QTY > 0 {
 		if err, success = stock.CheckStock(be.ExQTY); !success {
 			return err, false
