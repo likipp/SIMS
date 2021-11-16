@@ -107,3 +107,8 @@ func CGenerateProductNumber(c *gin.Context) {
 	number := generate.NumberWithProduct(p)
 	msg.Result(number, errors.New("创建编号成功"), 0, true, c)
 }
+
+func CDeleteProduct(c *gin.Context) {
+	fmt.Println("删除产品")
+	msg.Result(nil, errors.New("创建编号成功"), 0, true, c)
+}

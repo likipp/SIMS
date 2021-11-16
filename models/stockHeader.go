@@ -3,11 +3,9 @@ package models
 import (
 	"SIMS/global"
 	"SIMS/utils/msg"
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
-	"time"
 )
 
 // BillHeader 单据头
@@ -163,14 +161,12 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	//}
 	//fmt.Println(stockMap, "map数据")
 	// 执行订单表头总金额数据
-	fmt.Println("增加行明细结束", time.Now().Format("2006-01-02 15:04:05"))
 	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
 		tx.Rollback()
 		return msg.CreatedFail, false
 	}
 	tx.Commit()
-	fmt.Println("添加结束", time.Now().Format("2006-01-02 15:04:05"))
 	//tx.Rollback()
 	return msg.CreatedSuccess, true
 }
