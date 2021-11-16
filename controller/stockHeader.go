@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"time"
 )
 
 // Bill 定义前端传递过来的单据信息
@@ -43,6 +44,7 @@ func CStockHeader(c *gin.Context) {
 	var sb []models.BillEntry
 	var sh models.BillHeader
 	var stock Bill
+	fmt.Println("开始-----", time.Now().Format("2006-01-02 15:04:05"))
 	err := gins.ParseJSON(c, &stock)
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
@@ -58,6 +60,7 @@ func CStockHeader(c *gin.Context) {
 		msg.Result(nil, msg.Copier, 1, false, c)
 		return
 	}
+	fmt.Println("copier成功了", time.Now().Format("2006-01-02 15:04:05"))
 	err, success := services.SStockHeader(sh, sb)
 	if success {
 		msg.Result(nil, err, 0, true, c)
@@ -71,6 +74,7 @@ func CDeleteBill(c *gin.Context) {
 	number := c.Param("number")
 	fmt.Println(number, "number")
 	err, success := services.SDeleteBillByID(number)
+	fmt.Println(err, "错误消息", success)
 	if success {
 		msg.Result(nil, err, 0, true, c)
 	}
