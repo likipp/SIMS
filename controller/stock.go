@@ -77,7 +77,13 @@ func CInOrExStock(c *gin.Context) {
 }
 
 func CGetStockList(c *gin.Context) {
-	err, i, success := services.SGetStockList()
+	var params models.StockQueryParams
+	err := gins.ParseQuery(c, &params)
+	if err != nil {
+		msg.Result(nil, err, 1, false, c)
+		return
+	}
+	err, i, success := services.SGetStockList(params)
 	if !success {
 		msg.Result(i, err, 2, false, c)
 		return

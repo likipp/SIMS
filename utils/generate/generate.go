@@ -79,14 +79,23 @@ func NumberWithProduct(parent string) (n string) {
 	var p models.Products
 	var total int64
 	var buf bytes.Buffer
+	var NewNumberL string
 	global.GDB.Joins("JOIN brands on brands.id = products.brand").Where("brands.number = ?", parent).Last(&p).Count(&total)
 	if total > 0 {
-		NewNumberL := utils.IntConvJoin(p.PNumber[3:])
+		if parent == "B" {
+			NewNumberL = utils.IntConvJoinByProduct(p.PNumber[1:], "B")
+		} else {
+			NewNumberL = utils.IntConvJoinByProduct(p.PNumber[2:], "HX")
+		}
 		buf.WriteString(parent)
 		buf.WriteString(NewNumberL)
 		return buf.String()
 	}
+	if parent == "B" {
+		buf.WriteString("00001")
+	} else {
+		buf.WriteString("0001")
+	}
 	buf.WriteString(parent)
-	buf.WriteString("001")
 	return buf.String()
 }

@@ -6,10 +6,11 @@ ENV GOPROXY=https://goproxy.cn,direct
 WORKDIR $GOPATH/src/SIMS
 COPY . $GOPATH/src/SIMS
 
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-RUN echo 'Asia/Shanghai' >/etc/timezone
+#RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+#RUN echo 'Asia/Shanghai' >/etc/timezone
 #RUN go mod init
 #RUN go mod tidy
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
 RUN go build .
 
 

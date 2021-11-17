@@ -56,24 +56,31 @@ type InStock struct {
 
 type InStockQueryParams struct {
 	schema.PaginationParam
-	Sorter    map[string]interface{}      `form:"sorter"`
-	Status    int        `form:"status"`
-	PNumber   string     `form:"p_number"`
-	PName     string     `form:"p_name"`
-	BeginTime *time.Time `form:"begin_time"`
-	EedTime   *time.Time `form:"end_time"`
-	Number    string     `form:"number"`
+	Sorter    map[string]interface{} `form:"sorter"`
+	Status    int                    `form:"status"`
+	PNumber   string                 `form:"p_number"`
+	PName     string                 `form:"p_name"`
+	BeginTime *time.Time             `form:"begin_time"`
+	EedTime   *time.Time             `form:"end_time"`
+	Number    string                 `form:"number"`
 }
 
 type ExListQueryParams struct {
 	schema.PaginationParam
-	Sorter    map[string]interface{}   `form:"sorter"`
-	PNumber   string     `form:"p_number"`
-	PName     string     `form:"p_name"`
-	Number    string     `form:"number"`
-	PayMethod string     `form:"pay_method"`
+	Sorter    map[string]interface{} `form:"sorter"`
+	PNumber   string                 `form:"p_number"`
+	PName     string                 `form:"p_name"`
+	Number    string                 `form:"number"`
+	PayMethod string                 `form:"pay_method"`
 	//Custom    string     `form:"custom"`
-	CustomName string    `form:"c_name"`
+	CustomName string `form:"c_name"`
+}
+
+type StockQueryParams struct {
+	Sorter    map[string]interface{} `form:"sorter"`
+	PNumber   string                 `form:"p_number"`
+	PName     string                 `form:"p_name"`
+	WareHouse int                    `form:"ware_house"`
 }
 
 func (s *Stock) Validate() error {
@@ -93,7 +100,6 @@ func GetStockDB() *gorm.DB {
 func GetWareHouseQtyWithProduct(wareHouse int, product string, tx *gorm.DB) *Stock {
 	var stock Stock
 	var count int64
-	//db := GetStockDB()
 	tx.Where("ware_house = ? and p_number = ?", wareHouse, product).Find(&stock).Count(&count)
 	if count > 0 {
 		return &stock
@@ -145,10 +151,28 @@ func (s *Stock) UpdateStockWithTransaction(tx *gorm.DB) (err error, success bool
 	return msg.UpdatedSuccess, true
 }
 
-func GetStockList() (error, []Stock, bool) {
+func GetStockList(params StockQueryParams) (error, []Stock, bool) {
 	var ss []Stock
 	db := GetStockDB()
 	if err := db.Find(&ss).Error; err != nil {
+		return msg.GetFail, ss, false
+	}
+	if v := params.PNumber; v != "" {
+		if err := db.Where("p_number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.PName; v != "" {
+		if err := db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.WareHouse; v > 0 {
+		if err := db.Where("ware_house = ?", params.WareHouse).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if err := db.Scopes(schema.QueryOrder(params.Sorter)).Find(&ss).Error; err != nil {
 		return msg.GetFail, ss, false
 	}
 	return msg.GetSuccess, ss, true
@@ -156,7 +180,6 @@ func GetStockList() (error, []Stock, bool) {
 
 func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 	var el []ExStock
-	fmt.Println(params.Sorter, "params")
 	db := global.GDB.Select("bill_headers.number, customs.c_name, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.ex_qty, bill_entries.unit_price, bill_entries.discount as b_discount, bill_entries.total, bill_entries.cost, bill_entries.profit").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Joins("left join customs on customs.id = bill_headers.custom").Where("bill_headers.stock_type = ?", "出库单")
 	err := db.Error
 	if err != nil {

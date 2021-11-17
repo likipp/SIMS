@@ -13,8 +13,8 @@ import "SIMS/models"
 //}
 
 // SGetStockList 获取即时库存
-func SGetStockList() (err error, sR []models.Stock, success bool) {
-	err, list, success := models.GetStockList()
+func SGetStockList(params models.StockQueryParams) (err error, sR []models.Stock, success bool) {
+	err, list, success := models.GetStockList(params)
 	if !success {
 		return err, list, false
 	}

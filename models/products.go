@@ -42,15 +42,15 @@ type ProductQueryParams struct {
 
 type ProductQueryResult struct {
 	BaseModel
-	PName   string  `json:"p_name"`
-	PNumber string  `json:"p_number"`
-	Spec    string  `json:"p_spec"`
-	Price   float32 `json:"p_price"`
-	Brand   int     `json:"brand"`
-	Unit    int     `json:"unit"`
-	WareHouse int   `json:"ware_house"`
-	Mark    string  `json:"mark"`
-	Picture string
+	PName     string  `json:"p_name"`
+	PNumber   string  `json:"p_number"`
+	Spec      string  `json:"p_spec"`
+	Price     float32 `json:"p_price"`
+	Brand     int     `json:"brand"`
+	Unit      int     `json:"unit"`
+	WareHouse int     `json:"ware_house"`
+	Mark      string  `json:"mark"`
+	Picture   string
 }
 
 type ProductsSelect struct {
@@ -107,7 +107,7 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 	for _, pro := range psl {
 		//var ws WareHouse
 		p.Value = pro.PNumber
-		p.Label = pro.PNumber
+		p.Label = pro.PNumber + pro.PName
 		p.Key = pro.PName
 		p.PName = pro.PName
 		p.Price = pro.Price

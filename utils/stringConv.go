@@ -33,3 +33,31 @@ func IntConvJoin(s string) string {
 	newNumStr = strconv.Itoa(newNumber)
 	return newNumStr
 }
+
+func IntConvJoinByProduct(s, brand string) string {
+	var newNumStr string
+	lastNumber := StringConvInt(s)
+	newNumber := lastNumber + 1
+	fmt.Println(newNumber, brand)
+	if brand == "B" {
+		if newNumber < 10 {
+			newNumStr = fmt.Sprintf("%s%d", "0000", newNumber)
+			return newNumStr
+		}
+		if newNumber > 10 {
+			newNumStr = fmt.Sprintf("%s%d", "000", newNumber)
+			return newNumStr
+		}
+	} else {
+		if newNumber < 10 {
+			newNumStr = fmt.Sprintf("%s%d", "0", newNumber)
+			return newNumStr
+		}
+		if newNumber > 10 {
+			newNumStr = fmt.Sprintf("%s%d", "00", newNumber)
+			return newNumStr
+		}
+	}
+	newNumStr = strconv.Itoa(newNumber)
+	return newNumStr
+}
