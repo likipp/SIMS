@@ -58,6 +58,7 @@ type ProductsSelect struct {
 	Label     string  `json:"label"`
 	Key       string  `json:"key"`
 	Price     float32 `json:"price"`
+	PName     string  `json:"p_name"`
 	WareHouse int     `json:"ware_house"`
 }
 
@@ -105,9 +106,10 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 	}
 	for _, pro := range psl {
 		//var ws WareHouse
-		p.Value = pro.PName
+		p.Value = pro.PNumber
 		p.Label = pro.PNumber
-		p.Key = pro.PNumber
+		p.Key = pro.PName
+		p.PName = pro.PName
 		p.Price = pro.Price
 		//global.GDB.Select("Name").Where("id = ?", pro.WareHouse).Find(&ws)
 		p.WareHouse = pro.WareHouse
