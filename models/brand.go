@@ -24,7 +24,7 @@ type BrandSelect struct {
 
 type BrandTree struct {
 	Title string `json:"title"`
-	Key   string    `json:"key"`
+	Key   int    `json:"key"`
 }
 
 func GetBrandDB(db *gorm.DB) *gorm.DB {
@@ -78,7 +78,7 @@ func GetBrandTree() (error, []BrandTree, bool) {
 	}
 	for _, brand := range bl {
 		bt.Title = brand.Name
-		bt.Key = brand.Number
+		bt.Key = brand.ID
 		btl = append(btl, bt)
 	}
 	return msg.GetSuccess, btl, true

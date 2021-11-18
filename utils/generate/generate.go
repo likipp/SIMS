@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+type ProductNumber struct {
+	Name        string     `json:"name"`
+	Number      string     `json:"number"`
+	PNumber     string     `json:"p_number"`
+	ID          int        `json:"id"`
+}
+
 func GenerateNumber(t string) (n string) {
 	if t == "" {
 		return ""
@@ -76,26 +83,23 @@ func GenerateNumberWithYF() (n string) {
 }
 
 func NumberWithProduct(parent string) (n string) {
-	var p models.Products
+	//var p models.Products
+	var pn ProductNumber
 	var total int64
 	var buf bytes.Buffer
 	var NewNumberL string
-	global.GDB.Joins("JOIN brands on brands.id = products.brand").Where("brands.number = ?", parent).Last(&p).Count(&total)
-	if total > 0 {
-		if parent == "B" {
-			NewNumberL = utils.IntConvJoinByProduct(p.PNumber[1:], "B")
-		} else {
-			NewNumberL = utils.IntConvJoinByProduct(p.PNumber[2:], "HX")
-		}
-		buf.WriteString(parent)
-		buf.WriteString(NewNumberL)
-		return buf.String()
-	}
-	if parent == "B" {
-		buf.WriteString("00001")
-	} else {
-		buf.WriteString("0001")
-	}
-	buf.WriteString(parent)
+	global.GDB.Select("brands.number, brands.id, brands.name, products.p_number").Model(&models.Products{}).Joins("left join brands on brands.id = products.brand").Where("brands.id = ?", parent).Last(&pn).Count(&total)
+	//fmt.Println("total:", total)
+	//if total > 0 {
+	//}
+	//if parent == "B" {
+	//	buf.WriteString("00001")
+	//} else {
+	//	buf.WriteString("0001")
+	//}
+	//buf.WriteString(parent)
+	NewNumberL = utils.IntConvJoinByProduct(len(pn.Number), pn.PNumber[len(pn.Number):])
+	buf.WriteString(pn.Number)
+	buf.WriteString(NewNumberL)
 	return buf.String()
 }

@@ -103,7 +103,8 @@ func CUploadPicture(c *gin.Context) {
 }
 
 func CGenerateProductNumber(c *gin.Context) {
-	p := c.Query("parent")
+	p := c.DefaultQuery("parent", "")
+	fmt.Println(p, "前端信息")
 	number := generate.NumberWithProduct(p)
 	msg.Result(number, errors.New("创建编号成功"), 0, true, c)
 }
