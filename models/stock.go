@@ -154,7 +154,7 @@ func (s *Stock) UpdateStockWithTransaction(tx *gorm.DB) (err error, success bool
 func GetStockList(params StockQueryParams) (error, []Stock, bool) {
 	var ss []Stock
 	db := GetStockDB()
-	if err := db.Find(&ss).Error; err != nil {
+	if err := db.Where("qty != 0").Find(&ss).Error; err != nil {
 		return msg.GetFail, ss, false
 	}
 	if v := params.PNumber; v != "" {

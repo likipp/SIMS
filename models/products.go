@@ -24,16 +24,8 @@ type Products struct {
 	Picture   string  `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
 }
 
-//type ProductOrder struct {
-//	Sorter string `form:"Sorter"`
-//	//PNumberOrder string `form:"p_number_order"`
-//	//BrandOrder string  `form:"brand_order"`
-//	//IDOrder    string `form:"id_order"`
-//}
-
 type ProductQueryParams struct {
 	schema.PaginationParam
-	//ProductOrder
 	Sorter  string `form:"sorter"`
 	PName   string `form:"p_name"`
 	PNumber string `form:"p_number"`
@@ -105,13 +97,11 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 		return msg.GetFail, list, false
 	}
 	for _, pro := range psl {
-		//var ws WareHouse
 		p.Value = pro.PNumber
 		p.Label = pro.PNumber + pro.PName
 		p.Key = pro.PName
 		p.PName = pro.PName
 		p.Price = pro.Price
-		//global.GDB.Select("Name").Where("id = ?", pro.WareHouse).Find(&ws)
 		p.WareHouse = pro.WareHouse
 		ps = append(ps, p)
 	}
@@ -128,6 +118,16 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 	db.Find(&List)
 	if v := params.Brand; v > 0 {
 		if err := db.Where("brand = ?", v).Error; err != nil {
+			return msg.GetFail, nil, 0, false
+		}
+	}
+	if v := params.PName; v != "" {
+		if err := db.Where("p_name = ?", v).Error; err != nil {
+			return msg.GetFail, nil, 0, false
+		}
+	}
+	if v := params.PNumber; v != "" {
+		if err := db.Where("p_number = ?", v).Error; err != nil {
 			return msg.GetFail, nil, 0, false
 		}
 	}
