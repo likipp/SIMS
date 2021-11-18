@@ -125,8 +125,13 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 	if err != nil {
 		return msg.Copier, nil, 0, false
 	}
-	db.Find(&List).Count(&total)
-	db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&List)
+	db.Find(&List)
+	if v := params.Brand; v > 0 {
+		if err := db.Where("brand = ?", v).Error; err != nil {
+			return msg.GetFail, nil, 0, false
+		}
+	}
+	db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&List).Count(&total)
 
 	if err != nil {
 		return msg.GetFail, nil, 0, false
