@@ -115,23 +115,23 @@ func (p *Products) GetProductsList(params ProductQueryParams) (err error, List [
 	if err != nil {
 		return msg.Copier, nil, 0, false
 	}
-	db.Find(&List)
+	db.Find(&List).Count(&total)
 	if v := params.Brand; v > 0 {
-		if err := db.Where("brand = ?", v).Error; err != nil {
+		if err := db.Where("brand = ?", v).Count(&total).Error; err != nil {
 			return msg.GetFail, nil, 0, false
 		}
 	}
 	if v := params.PName; v != "" {
-		if err := db.Where("p_name = ?", v).Error; err != nil {
+		if err := db.Where("p_name = ?", v).Count(&total).Error; err != nil {
 			return msg.GetFail, nil, 0, false
 		}
 	}
 	if v := params.PNumber; v != "" {
-		if err := db.Where("p_number = ?", v).Error; err != nil {
+		if err := db.Where("p_number = ?", v).Count(&total).Error; err != nil {
 			return msg.GetFail, nil, 0, false
 		}
 	}
-	db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&List).Count(&total)
+	db.Scopes(schema.QueryPaging(params.PaginationParam)).Find(&List)
 
 	if err != nil {
 		return msg.GetFail, nil, 0, false
