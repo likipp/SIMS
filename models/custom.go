@@ -1,5 +1,6 @@
 package models
 
+import "C"
 import (
 	"SIMS/global"
 	"SIMS/internal/entity"
@@ -40,6 +41,7 @@ type CustomQueryParams struct {
 type CustomSelect struct {
 	Value     string `json:"value"`
 	Label     string `json:"label"`
+	Key       string `json:"key"`
 	ID        int    `json:"id"`
 	Discount  int    `json:"discount"`
 	LevelName string `json:"l_name"`
@@ -73,7 +75,6 @@ func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, Lis
 		db.Select(selectData).Joins(joinData).Find(&List)
 
 	}
-	//err = schema.QueryPaging(params.PaginationParam)
 	if err != nil {
 		return false, msg.GetFail, nil, 0
 	}
@@ -93,7 +94,7 @@ func GetCustomsListWithQuery(param string) (err error, list []CustomSelect, succ
 	var cs []CustomSelect
 	//var cl []Custom
 	con := fmt.Sprintf("%s%s%s", "%", param, "%")
-	var selectData = "customs.id, customs.c_number as label, customs.c_name as value, custom_levels.name as l_name, custom_levels.discount"
+	var selectData = "customs.id, customs.c_number as value, customs.c_name as label, custom_levels.name as l_name, custom_levels.discount"
 	var joinData = "join custom_levels on customs.level = custom_levels.id"
 	db := GetCustomDB()
 	if param != "" {
@@ -104,6 +105,10 @@ func GetCustomsListWithQuery(param string) (err error, list []CustomSelect, succ
 	}
 	if err = db.Select(selectData).Joins(joinData).Find(&cs).Error; err != nil {
 		return msg.GetFail, list, false
+	}
+	for i := range cs {
+		cs[i].Key = cs[i].Label
+		cs[i].Label = cs[i].Value + cs[i].Key
 	}
 	return msg.GetSuccess, cs, true
 }

@@ -162,6 +162,7 @@ func GetStockList(params StockQueryParams) (error, []Stock, bool) {
 			return msg.GetFail, nil, false
 		}
 	}
+	fmt.Println(params.WareHouse, "仓库")
 	if v := params.PName; v != "" {
 		if err := db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
 			return msg.GetFail, nil, false

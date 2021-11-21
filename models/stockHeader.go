@@ -11,11 +11,9 @@ import (
 // BillHeader 单据头
 type BillHeader struct {
 	BaseModel
-	StockType string `json:"bill_type" gorm:"comment:'单据类型'"`
-	Number    string `json:"bill_number" gorm:"comment:'单号'"`
-	Custom    int    `json:"custom" gorm:"comment:'客户'"`
-	//Supplier  int    `json:"supplier" gorm:"comment:'供应商'"`
-	//Discount  int    `json:"discount"  gorm:"comment:'折扣'"`
+	StockType    string  `json:"bill_type" gorm:"comment:'单据类型'"`
+	Number       string  `json:"bill_number" gorm:"comment:'单号'"`
+	Custom       int     `json:"custom" gorm:"comment:'客户'"`
 	PayMethod    string  `json:"pay_method"  gorm:"comment:'收款方式'"`
 	Status       int     `json:"status" gorm:"comment:'状态'"`
 	BillAmount   float32 `json:"bill_amount" gorm:"订单金额"`
@@ -49,8 +47,6 @@ func (sh *BillHeader) Validate() error {
 func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	var billTotal float32
 	var total int64
-	//var newSB []BillEntry
-	//var stockMap = make(map[string]int, 10)
 	// 校验字段是否满足条件
 	err = validation.Validate(sh, validation.NotNil)
 	if err != nil {
@@ -74,23 +70,8 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 	if err = tx.Create(&sh).Error; err != nil {
 		return msg.CreatedFail, false
 	}
-	//for i := 0; i < len(sb); i++ {
-	//	if len(newSB) == 0 {
-	//		newSB = append(newSB, sb[i])
-	//		continue
-	//	}
-	//	for y, length := 0, len(newSB); y < length; y++ {
-	//		if sb[i].PNumber == newSB[y].PNumber {
-	//			newSB[y].InQTY = newSB[y].InQTY + sb[i].InQTY
-	//		} else {
-	//			newSB = append(newSB, sb[i])
-	//		}
-	//	}
-	//}
 	for i, length := 0, len(sb); i < length; i++ {
 		sb[i].HeaderID = sh.ID
-		//if len(stockMap) == 0 {
-		//}
 		//stock := GetWareHouseQtyWithProduct(sb[i].WareHouse, sb[i].PNumber, tx)
 		if sh.StockType == global.In {
 			//sb[i].InQTY = stock.QTY + sb[i].InQTY
@@ -109,65 +90,13 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 			tx.Rollback()
 			return err, false
 		}
-		//continue
-		//if _, ok := stockMap[sb[i].PNumber]; ok {
-		//	stockMap[sb[i].PNumber] = stockMap[sb[i].PNumber] + sb[i].InQTY
-		//	if sh.StockType == global.In {
-		//		err, success = sb[i].InStockLog(tx)
-		//		if !success {
-		//			tx.Rollback()
-		//			return err, false
-		//		}
-		//		// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
-		//		billTotal += sb[i].Total
-		//		continue
-		//	}
-		//} else {
-		//	stockMap[sb[i].PNumber] = sb[i].InQTY
-		//	if sh.StockType == global.In {
-		//		err, success = sb[i].InStockLog(tx)
-		//		if !success {
-		//			tx.Rollback()
-		//			return err, false
-		//		}
-		//		// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
-		//		billTotal += sb[i].Total
-		//		continue
-		//	}
-		//}
 	}
-	//fmt.Println(newSB, "修改后")
-	//// 循环表体明细, 根据单据类型, 更新库存数据
-	//for i := range sb {
-	//	// 绑定订单表体与订单表头的关联信息
-	//	sb[i].HeaderID = sh.ID
-	//	// 判断出入库类型, 如果类型属于入库, 则执行InStockLog方法
-	//	if sh.StockType == global.In {
-	//		err, success = sb[i].InStockLog(tx)
-	//		if !success {
-	//			tx.Rollback()
-	//			return err, false
-	//		}
-	//		// 将明细金额汇总, 填写到表头信息中, 方便与供应商结算
-	//		billTotal += sb[i].Total
-	//		continue
-	//	}
-	//	// 判断出入库类型, 如果类型属于出库, ExStockLog
-	//	err, success = sb[i].ExStockLog(tx)
-	//	if !success {
-	//		tx.Rollback()
-	//		return err, false
-	//	}
-	//}
-	//fmt.Println(stockMap, "map数据")
-	// 执行订单表头总金额数据
 	err = tx.Model(&BillHeader{}).Where("number = ?", sh.Number).Update("bill_amount", billTotal).Error
 	if err != nil {
 		tx.Rollback()
 		return msg.CreatedFail, false
 	}
 	tx.Commit()
-	//tx.Rollback()
 	return msg.CreatedSuccess, true
 }
 
@@ -321,50 +250,6 @@ func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
 			}
 		}
 	}
-	//for i := 0; i < len(sb); i++ {
-	//	stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber)
-	//	if sbOld[i].PNumber == sb[i].PNumber {
-	//		if sbOld[i].WareHouse == sb[i].WareHouse {
-	//			if sbOld[i].InQTY > sb[i].InQTY {
-	//				if stock.QTY < sbOld[i].InQTY - sb[i].InQTY {
-	//					return msg.ExGTStock, false
-	//				}
-	//				if err = tx.Model(sb[i]).Updates(sb[i]).Error; err != nil {
-	//					return msg.UpdatedFail, false
-	//				}
-	//				if err = tx.Model(stock).Update("qty", stock.QTY - (sbOld[i].InQTY - sb[i].InQTY)).Error; err != nil {
-	//					return msg.UpdatedFail, false
-	//				}
-	//			}
-	//			if err = tx.Model(sb[i]).Updates(sb[i]).Error; err != nil {
-	//				return msg.UpdatedFail, false
-	//			}
-	//			if err = tx.Model(stock).Update("qty", stock.QTY + (sb[i].InQTY - sbOld[i].InQTY)).Error; err != nil {
-	//				return msg.UpdatedFail, false
-	//			}
-	//		}
-	//		if stock.QTY < sbOld[i].InQTY {
-	//			return msg.ExGTStock, false
-	//		}
-	//		if stock.QTY == sbOld[i].InQTY {
-	//			if err = tx.Delete(&stock).Error; err != nil {
-	//				return msg.DeletedFail, false
-	//			}
-	//		}
-	//		if err = tx.Model(stock).Update("qty", stock.QTY - sbOld[i].InQTY).Error; err != nil {
-	//			return msg.UpdatedFail, false
-	//		}
-	//	}
-	//	if stock.QTY < sbOld[i].InQTY {
-	//		return msg.ExGTStock, false
-	//	}
-	//	if err = tx.Delete(sbOld[i]).Error; err != nil {
-	//		return msg.DeletedFail, false
-	//	}
-	//	if err = tx.Create(&sb[i]).Error; err != nil {
-	//		return msg.CreatedFail, false
-	//	}
-	//}
 	tx.Commit()
 	return msg.UpdatedSuccess, true
 }
