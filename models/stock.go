@@ -63,17 +63,19 @@ type InStockQueryParams struct {
 	BeginTime *time.Time             `form:"begin_time"`
 	EedTime   *time.Time             `form:"end_time"`
 	Number    string                 `form:"number"`
+	CreatedAt  []string               `form:"created_at"`
 }
 
 type ExListQueryParams struct {
 	schema.PaginationParam
-	Sorter    map[string]interface{} `form:"sorter"`
-	PNumber   string                 `form:"p_number"`
-	PName     string                 `form:"p_name"`
-	Number    string                 `form:"number"`
-	PayMethod string                 `form:"pay_method"`
+	Sorter     map[string]interface{} `form:"sorter"`
+	PNumber    string                 `form:"p_number"`
+	PName      string                 `form:"p_name"`
+	Number     string                 `form:"number"`
+	PayMethod  string                 `form:"pay_method"`
 	//Custom    string     `form:"custom"`
-	CustomName string `form:"c_name"`
+	CustomName string                 `form:"c_name"`
+	CreatedAt  []string               `form:"created_at"`
 }
 
 type StockQueryParams struct {
@@ -162,7 +164,6 @@ func GetStockList(params StockQueryParams) (error, []Stock, bool) {
 			return msg.GetFail, nil, false
 		}
 	}
-	fmt.Println(params.WareHouse, "仓库")
 	if v := params.PName; v != "" {
 		if err := db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
 			return msg.GetFail, nil, false
@@ -211,8 +212,15 @@ func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 			return msg.GetFail, nil, false
 		}
 	}
+	if v := params.CreatedAt; len(v) > 0 {
+		if err != nil {
+			fmt.Println(err)
+		}
+		if err = db.Where("bill_headers.created_at BETWEEN ? AND ?", v[0], v[1]).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
 	err = db.Scopes(schema.QueryOrder(params.Sorter)).Find(&el).Error
-	//.Find(&el).Error
 	if err != nil {
 		return msg.GetFail, el, false
 	}
@@ -243,6 +251,14 @@ func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
 	}
 	if v := params.Number; v != "" {
 		if err = db.Where("number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.CreatedAt; len(v) > 0 {
+		if err != nil {
+			fmt.Println(err)
+		}
+		if err = db.Where("bill_headers.created_at BETWEEN ? AND ?", v[0], v[1]).Error; err != nil {
 			return msg.GetFail, nil, false
 		}
 	}
