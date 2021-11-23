@@ -171,7 +171,7 @@ func UpdateData(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY int,
 }
 
 // UpdateBillByID 待完成
-func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
+func UpdateBillByID(number string, sb []BillEntry) (err error, success bool) {
 	var sh BillHeader
 	var sbOld []BillEntry
 	var billTotal float32
@@ -180,7 +180,7 @@ func UpdateBillByID(id int, sb []BillEntry) (err error, success bool) {
 	}
 	tx := global.GDB.Begin()
 	// 通过ID值获取到对应的表单头部数据
-	if err = tx.Where("id = ?", id).Find(&sh).Error; err != nil {
+	if err = tx.Where("number = ?", number).Find(&sh).Error; err != nil {
 		return msg.GetFail, false
 	}
 	// 通过HeaderID获取对应的表单明细数据

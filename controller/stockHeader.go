@@ -83,7 +83,7 @@ func CUpdateBillByID(c *gin.Context) {
 	var sb []models.BillEntry
 	var sh models.BillHeader
 	err := gins.ParseJSON(c, &stock)
-	fmt.Println(stock.Body[0].HeaderID, "body")
+	fmt.Println(stock, "body")
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
 		return
@@ -97,10 +97,11 @@ func CUpdateBillByID(c *gin.Context) {
 		msg.Result(nil, msg.Copier, 1, false, c)
 		return
 	}
-	err, success := services.SUpdateBillByID(sh.ID, sb)
+	err, success := services.SUpdateBillByID(sh.Number, sb)
 	fmt.Println(err, "error错误消息", success)
 	if success {
 		msg.Result(nil, err, 0, true, c)
+		return
 	}
 	msg.Result(nil, err, 1, false, c)
 }

@@ -12,8 +12,8 @@ func SDeleteBillByID(number string) (err error, success bool) {
 	return err, success
 }
 
-func SUpdateBillByID(id int, sb []models.BillEntry) (err error, success bool) {
-	err, success = models.UpdateBillByID(id, sb)
+func SUpdateBillByID(number string, sb []models.BillEntry) (err error, success bool) {
+	err, success = models.UpdateBillByID(number, sb)
 	return err, success
 }
 
