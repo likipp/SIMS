@@ -25,12 +25,13 @@ type StockWithAction struct {
 }
 
 type ExStock struct {
-	Number     string     `json:"number"`
-	CName      string     `json:"c_name"`
-	CreatedAt  *time.Time `json:"created_at"`
-	PayMethod  string     `json:"pay_method"`
-	PNumber    string     `json:"p_number"`
-	PName      string     `json:"p_name"`
+	ID         int        `json:"id" gorm:"index"`
+	Number     string     `json:"number" gorm:"index"`
+	CName      string     `json:"c_name" gorm:"index"`
+	CreatedAt  *time.Time `json:"created_at" gorm:"index"`
+	PayMethod  string     `json:"pay_method" gorm:"index"`
+	PNumber    string     `json:"p_number" gorm:"index"`
+	PName      string     `json:"p_name" gorm:"index"`
 	ExQTY      string     `json:"ex_qty"`
 	UnitPrice  int        `json:"unit_price"`
 	ExDiscount float32    `json:"ex_discount"`
@@ -41,13 +42,13 @@ type ExStock struct {
 }
 
 type InStock struct {
-	ID           int        `json:"id"`
-	Number       string     `json:"number"`
-	Status       int        `json:"status"`
-	CreatedAt    *time.Time `json:"created_at"`
-	PayMethod    string     `json:"pay_method"`
-	PNumber      string     `json:"p_number"`
-	PName        string     `json:"p_name"`
+	ID         int          `json:"id" gorm:"index"`
+	Number       string     `json:"number" gorm:"index"`
+	Status       int        `json:"status" gorm:"index"`
+	CreatedAt    *time.Time `json:"created_at" gorm:"index"`
+	PayMethod    string     `json:"pay_method" gorm:"index"`
+	PNumber      string     `json:"p_number" gorm:"index"`
+	PName        string     `json:"p_name" gorm:"index"`
 	InQTY        string     `json:"in_qty"`
 	UnitPrice    float32    `json:"unit_price"`
 	BillAmount   float32    `json:"bill_amount"`

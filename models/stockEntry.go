@@ -22,6 +22,7 @@ type BillEntry struct {
 	Cost       float32 `json:"cost" gorm:"成本"`
 	Profit     float32 `json:"profit" gorm:"利润"`
 	Total      float32 `json:"total" gorm:"comment:'金额'"`
+	ChangeMark bool    `json:"change_mark" gorm:"comment:'变更标志'"`
 }
 
 func (be *BillEntry) Validate() error {
