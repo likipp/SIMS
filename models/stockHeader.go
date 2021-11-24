@@ -185,12 +185,14 @@ func UpdateDataByEx(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY 
 		tx.Rollback()
 		return msg.UpdatedFail, false
 	}
-	//if sh.BillAmount != billTotal {
-	//	if err = tx.Model(sh).Update("bill_amount", billTotal).Error; err != nil {
-	//		tx.Rollback()
-	//		return msg.UpdatedFail, false
-	//	}
-	//}
+	return msg.UpdatedSuccess, true
+}
+
+func UpdateDataHeaderByEx(tx *gorm.DB, sh BillHeader) (err error, success bool) {
+	if err = tx.Model(sh).Updates(sh).Error; err != nil {
+		tx.Rollback()
+		return msg.UpdatedFail, false
+	}
 	return msg.UpdatedSuccess, true
 }
 
@@ -208,6 +210,7 @@ func UpdateBillByNumber(sh BillHeader, sb []BillEntry) (err error, success bool)
 	if err = tx.Where("number = ?", sh.Number).Find(&shOld).Error; err != nil {
 		return msg.GetFail, false
 	}
+	fmt.Println("旧数据", shOld)
 	sh.ID = shOld.ID
 	// 通过HeaderID获取对应的表单明细数据
 	if err = tx.Where("header_id = ?", sh.ID).Find(&sbOld).Error; err != nil {
@@ -215,6 +218,13 @@ func UpdateBillByNumber(sh BillHeader, sb []BillEntry) (err error, success bool)
 	}
 	// 如果前端传递的明细行数量小于原始数据, 走小于逻辑的判断
 	if len(sbOld) >= len(sb) {
+		if len(sb) == 0 {
+			err, success = UpdateDataHeaderByEx(tx, sh)
+			if !success {
+				return err, false
+			}
+		}
+
 		// 判断单据类型
 		if sh.StockType == global.In {
 			// 循环原始数据
