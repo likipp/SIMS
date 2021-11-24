@@ -83,7 +83,6 @@ func CUpdateBillByNUmber(c *gin.Context) {
 	var sb []models.BillEntry
 	var sh models.BillHeader
 	err := gins.ParseJSON(c, &stock)
-	fmt.Println("前端传递的数据:", stock)
 	if err != nil {
 		msg.Result(nil, msg.QueryParamsFail, 1, false, c)
 		return
@@ -97,8 +96,6 @@ func CUpdateBillByNUmber(c *gin.Context) {
 		msg.Result(nil, msg.Copier, 1, false, c)
 		return
 	}
-	fmt.Println("行数据信息:", sb)
-	fmt.Println("表单表头:", sh)
 	err, success := services.SUpdateBillByID(sh, sb)
 	if success {
 		msg.Result(nil, err, 0, true, c)

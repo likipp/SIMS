@@ -3,7 +3,6 @@ package models
 import (
 	"SIMS/global"
 	"SIMS/utils/msg"
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
@@ -180,7 +179,6 @@ func UpdateDataByEx(tx *gorm.DB, Nsb BillEntry, sh BillHeader, stock Stock, QTY 
 		tx.Rollback()
 		return msg.UpdatedFail, false
 	}
-	fmt.Println(sh, "单据表头")
 	if err = tx.Model(sh).Updates(sh).Error; err != nil {
 		tx.Rollback()
 		return msg.UpdatedFail, false
@@ -210,21 +208,14 @@ func UpdateBillByNumber(sh BillHeader, sb []BillEntry) (err error, success bool)
 	if err = tx.Where("number = ?", sh.Number).Find(&shOld).Error; err != nil {
 		return msg.GetFail, false
 	}
-	fmt.Println("旧数据", shOld)
 	sh.ID = shOld.ID
+	sh.StockType = shOld.StockType
 	// 通过HeaderID获取对应的表单明细数据
 	if err = tx.Where("header_id = ?", sh.ID).Find(&sbOld).Error; err != nil {
 		return msg.GetFail, false
 	}
 	// 如果前端传递的明细行数量小于原始数据, 走小于逻辑的判断
 	if len(sbOld) >= len(sb) {
-		if len(sb) == 0 {
-			err, success = UpdateDataHeaderByEx(tx, sh)
-			if !success {
-				return err, false
-			}
-		}
-
 		// 判断单据类型
 		if sh.StockType == global.In {
 			// 循环原始数据
@@ -288,62 +279,68 @@ func UpdateBillByNumber(sh BillHeader, sb []BillEntry) (err error, success bool)
 				}
 			}
 		} else {
-			for i := 0; i < len(sbOld); i++ {
-				// 获取明细行产品的库存信息
-				stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber, tx)
-				fmt.Println(stock, "库存")
-				// 如果原始数据与新数据的产品是一样的, 就只查看仓库, 数量, 单价是否变更
-				if sbOld[i].PNumber == sb[i].PNumber {
-					// 判断仓库是否一样, 如果一样, 更新数量, 单价, 金额
-					if sbOld[i].WareHouse == sb[i].WareHouse {
-						fmt.Println("到了比较新旧数据")
-						// 如果原始数据的入库数量大于新数据的入库数量
-						if sb[i].ExQTY > sbOld[i].ExQTY {
-							// 如果产品的库存数量小于（原始数据-新数据的数量), 则说明库存不足以修改, 报错返回
-							if stock.QTY < sb[i].ExQTY - sbOld[i].ExQTY{
-								return msg.ExGTStock, false
+			if len(sb) == 0 && sh.StockType == global.Ex {
+				err, success = UpdateDataHeaderByEx(tx, sh)
+				if !success {
+					return err, false
+				}
+			} else {
+				for i := 0; i < len(sbOld); i++ {
+					// 获取明细行产品的库存信息
+					stock := GetWareHouseQtyWithProduct(sbOld[i].WareHouse, sbOld[i].PNumber, tx)
+					// 如果原始数据与新数据的产品是一样的, 就只查看仓库, 数量, 单价是否变更
+					if sbOld[i].PNumber == sb[i].PNumber {
+						// 判断仓库是否一样, 如果一样, 更新数量, 单价, 金额
+						if sbOld[i].WareHouse == sb[i].WareHouse {
+							// 如果原始数据的入库数量大于新数据的入库数量
+							if sb[i].ExQTY > sbOld[i].ExQTY {
+								// 如果产品的库存数量小于（原始数据-新数据的数量), 则说明库存不足以修改, 报错返回
+								if stock.QTY < sb[i].ExQTY-sbOld[i].ExQTY {
+									return msg.ExGTStock, false
+								}
+								err, success = UpdateDataByEx(tx, sb[i], sh, *stock, stock.QTY-(sb[i].ExQTY-sbOld[i].ExQTY))
+								if !success {
+									return err, false
+								}
+								continue
 							}
-							err, success = UpdateDataByEx(tx, sb[i], sh, *stock, stock.QTY-(sb[i].ExQTY - sbOld[i].ExQTY))
+							err, success = UpdateDataByEx(tx, sb[i], sh, *stock, stock.QTY+(sbOld[i].ExQTY-sb[i].ExQTY))
 							if !success {
 								return err, false
 							}
 							continue
 						}
-						err, success = UpdateDataByEx(tx, sb[i], sh, *stock, stock.QTY+(sbOld[i].ExQTY-sb[i].ExQTY))
+
+						// 判断仓库发生变化
+						if stock.QTY < sbOld[i].ExQTY {
+							return msg.ExGTStock, false
+						}
+						if stock.QTY == sbOld[i].ExQTY {
+							if err = tx.Delete(&stock).Error; err != nil {
+								return msg.DeletedFail, false
+							}
+						}
+						err, success = UpdateDataByEx(tx, sb[i], sh, *stock, stock.QTY-sbOld[i].ExQTY)
 						if !success {
 							return err, false
 						}
 						continue
 					}
-
-					// 判断仓库发生变化
 					if stock.QTY < sbOld[i].ExQTY {
 						return msg.ExGTStock, false
 					}
-					if stock.QTY == sbOld[i].ExQTY {
-						if err = tx.Delete(&stock).Error; err != nil {
-							return msg.DeletedFail, false
-						}
+					if err = tx.Delete(sbOld[i]).Error; err != nil {
+						return msg.DeletedFail, false
 					}
-					err, success = UpdateDataByEx(tx, sb[i], sh, *stock, stock.QTY-sbOld[i].ExQTY)
-					if !success {
-						return err, false
+					if err = tx.Create(&sb[i]).Error; err != nil {
+						return msg.CreatedFail, false
 					}
-					continue
-				}
-				if stock.QTY < sbOld[i].ExQTY {
-					return msg.ExGTStock, false
-				}
-				if err = tx.Delete(sbOld[i]).Error; err != nil {
-					return msg.DeletedFail, false
-				}
-				if err = tx.Create(&sb[i]).Error; err != nil {
-					return msg.CreatedFail, false
-				}
-				if err = tx.Model(stock).Update("qty", stock.QTY-sbOld[i].ExQTY).Error; err != nil {
-					return msg.UpdatedFail, false
+					if err = tx.Model(stock).Update("qty", stock.QTY-sbOld[i].ExQTY).Error; err != nil {
+						return msg.UpdatedFail, false
+					}
 				}
 			}
+
 		}
 	}
 	//else {
@@ -409,7 +406,6 @@ func UpdateBillByNumber(sh BillHeader, sb []BillEntry) (err error, success bool)
 	//			}
 	//		}
 	//		for i := 0; i < len(sb) - len(sbOld); i++ {
-	//			fmt.Println("会到此处来")
 	//			if err = tx.Create(&sb[len(sbOld)+i]).Error; err != nil {
 	//				return msg.CreatedFail, false
 	//			}
