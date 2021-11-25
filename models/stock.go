@@ -183,7 +183,12 @@ func GetStockList(params StockQueryParams) (error, []Stock, bool) {
 
 func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 	var el []ExStock
-	db := global.GDB.Select("bill_headers.number, customs.c_name, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.ex_qty, bill_entries.unit_price, sum(bill_entries.total) as total, sum(bill_entries.cost) as cost, sum(bill_entries.profit) as profit").Group("number").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Joins("left join customs on customs.id = bill_headers.custom").Where("bill_headers.stock_type = ?", "出库单")
+	//var queryScript = global.GDB.Select("header_id, sum(total) as total, sum(cost) as cost, sum(profit) as profit").Group("header_id")
+	var selectColumns = "bill_headers.number, customs.c_name, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.ex_qty, bill_entries.unit_price, cus.profit, cus.total, cus.cost"
+	var jBEH = "left join bill_entries on bill_entries.header_id = bill_headers.id"
+	var jCBH = "left join customs on customs.id = bill_headers.custom"
+	var jQS = "join (select header_id, sum(total) as total, sum(cost) as cost, sum(profit) as profit from bill_entries group by header_id) as cus on cus.header_id = bill_entries.header_id"
+	db := global.GDB.Select(selectColumns).Model(&BillHeader{}).Joins(jBEH).Joins(jCBH).Joins(jQS).Where("bill_headers.stock_type = ?", "出库单")
 	err := db.Error
 	if err != nil {
 		return msg.GetFail, el, false
