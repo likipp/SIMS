@@ -235,7 +235,8 @@ func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 
 func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
 	var el []InStock
-	db := global.GDB.Select("bill_headers.id, bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, sum(bill_headers.bill_amount) as bill_amount, sum(bill_headers.remain_amount) as remain_amount, bill_headers.status").Group("number").Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单")
+	var selectColumns = "bill_headers.id, bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_headers.bill_amount, bill_headers.remain_amount, bill_headers.status"
+	db := global.GDB.Select(selectColumns).Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单")
 	err := db.Error
 	if err != nil {
 		return msg.GetFail, el, false
