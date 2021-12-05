@@ -143,3 +143,18 @@ func CGetInStockList(c *gin.Context) {
 	}
 	msg.Result(list, err, 1, true, c)
 }
+
+func CGetInExStockList(c *gin.Context) {
+	var params models.InExStockQueryParams
+	err := gins.ParseQuery(c, &params)
+	if err != nil {
+		msg.Result(nil, err, 1, false, c)
+		return
+	}
+	err, list, success := services.SGetInExStockList(params)
+	if !success {
+		msg.Result(nil, err, 2, false, c)
+		return
+	}
+	msg.Result(list, err, 1, true, c)
+}

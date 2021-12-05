@@ -74,6 +74,7 @@ func InitRouter() {
 		baseRouter.GET("stock/ex/", controller.CGetExStockList)
 		baseRouter.GET("stock/in", controller.CGetInStockList)
 		baseRouter.POST("stock/:id/", controller.CSChangeStock)
+		baseRouter.GET("stock/list/", controller.CGetInExStockList)
 		baseRouter.GET("ex-bill/", controller.CGetExBillDetail)
 		baseRouter.GET("in-bill/", controller.CGetInBillDetail)
 		baseRouter.PATCH("stock/:bill_number", controller.CUpdateBillByNUmber)

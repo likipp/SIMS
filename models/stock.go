@@ -55,6 +55,26 @@ type InStock struct {
 	RemainAmount float32    `json:"remain_amount"`
 }
 
+type InExStock struct {
+	ID         int        `json:"id"`
+	Number     string     `json:"number"`
+	CName      string     `json:"c_name"`
+	CreatedAt  *time.Time `json:"created_at"`
+	PayMethod  string     `json:"pay_method"`
+	PNumber    string     `json:"p_number"`
+	PName      string     `json:"p_name"`
+	ExQTY      int        `json:"ex_qty"`
+	UnitPrice  int        `json:"unit_price"`
+	ExDiscount float32    `json:"ex_discount"`
+	InDiscount float32    `json:"in_discount"`
+	Cost       float32    `json:"cost"`
+	Profit     float32    `json:"profit"`
+	Total      float32    `json:"total"`
+	Status     int        `json:"status"`
+	WareHouse  int        `json:"ware_house"`
+	InQTY      int        `json:"in_qty"`
+}
+
 type InStockQueryParams struct {
 	schema.PaginationParam
 	Sorter    map[string]interface{} `form:"sorter"`
@@ -84,6 +104,19 @@ type StockQueryParams struct {
 	PNumber   string                 `form:"p_number"`
 	PName     string                 `form:"p_name"`
 	WareHouse int                    `form:"ware_house"`
+}
+
+type InExStockQueryParams struct {
+	schema.PaginationParam
+	Sorter    map[string]interface{} `form:"sorter"`
+	Status    int                    `form:"status"`
+	PNumber   string                 `form:"p_number"`
+	PName     string                 `form:"p_name"`
+	BeginTime *time.Time             `form:"begin_time"`
+	EedTime   *time.Time             `form:"end_time"`
+	Number    string                 `form:"number"`
+	WareHouse int                    `form:"ware_house"`
+	CreatedAt []string               `form:"created_at"`
 }
 
 func (s *Stock) Validate() error {
@@ -273,4 +306,33 @@ func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
 		return msg.GetFail, nil, false
 	}
 	return msg.GetSuccess, el, true
+}
+
+func GetInExStockList(params InExStockQueryParams) (error, []InExStock, bool) {
+	var ies []InExStock
+	var selectColumns = "bill_headers.id, bill_headers.number, bill_headers.created_at, bill_entries.p_number, bill_entries.p_name, bill_entries.ware_house, bill_entries.in_qty, bill_entries.ex_qty, bill_entries.ex_discount, bill_entries.in_discount, bill_entries.unit_price, bill_entries.total"
+	db := global.GDB.Select(selectColumns).Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Order("bill_headers.created_at")
+	err := db.Error
+	if err != nil {
+		return msg.GetFail, ies, false
+	}
+	if v := params.PNumber; v != "" {
+		if err = db.Where("p_number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.PName; v != "" {
+		if err = db.Where("p_name like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if v := params.WareHouse; v > 0 {
+		if err = db.Where("ware_house = ?", v).Error; err != nil {
+			return msg.GetFail, nil, false
+		}
+	}
+	if err = db.Scopes(schema.QueryOrder(params.Sorter)).Find(&ies).Error; err != nil {
+		return msg.GetFail, nil, false
+	}
+	return msg.GetSuccess, ies, true
 }
