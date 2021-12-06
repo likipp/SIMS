@@ -82,6 +82,7 @@ func InitRouter() {
 		// 应付款单据
 		baseRouter.POST("payable/", controller.CCreatePayBill)
 		baseRouter.GET("payable/", controller.CGetPayList)
+		baseRouter.GET("payable-pie/", controller.CGetPayPie)
 	}
 	srv := &http.Server{
 		Addr:    ":8080",

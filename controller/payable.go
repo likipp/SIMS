@@ -33,3 +33,12 @@ func CGetPayList(c *gin.Context) {
 	}
 	msg.Result(nil, err, 1, false, c)
 }
+
+func CGetPayPie(c *gin.Context) {
+	err, data, success := services.SGetPayPie()
+	if success {
+		msg.Result(data, err, 0, true, c)
+		return
+	}
+	msg.Result(nil, err, 1, false, c)
+}

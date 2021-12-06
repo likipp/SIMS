@@ -29,6 +29,11 @@ type PayList struct {
 	Status     int        `json:"status"`
 }
 
+type PayPie struct {
+	Type  string       `json:"type"`
+	Value float32      `json:"value"`
+}
+
 func GetPayableDB() *gorm.DB {
 	return entity.GetDBWithModel(global.GDB, new(Payable))
 }
@@ -85,4 +90,16 @@ func GetPayList(param int) (error, []PayList, bool) {
 		return msg.GetSuccess, payList, true
 	}
 	return msg.GetFail, payList, false
+}
+
+func GetPayPie() (error, []PayPie, bool) {
+	var payPie []PayPie
+	var s = "brands.name as type, bill_headers.bill_amount - bill_headers.remain_amount as value"
+	var j1 = "join bill_entries on bill_entries.header_id = bill_headers.id"
+	var j2 = "join products on products.p_number = bill_entries.p_number"
+	var j3 = "join brands on brands.id = products.brand"
+	if err := global.GDB.Table("bill_headers").Select(s).Joins(j1).Joins(j2).Joins(j3).Where("bill_headers.stock_type = ?", "入库单").Group("brands.name").Scan(&payPie).Error; err != nil {
+		return msg.GetFail, payPie, false
+	}
+	return msg.GetSuccess, payPie, true
 }
