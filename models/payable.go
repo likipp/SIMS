@@ -30,19 +30,25 @@ type PayList struct {
 }
 
 type PayPie struct {
-	Type  string       `json:"type"`
-	Value float32      `json:"value"`
+	Type  string  `json:"type"`
+	Value float32 `json:"value"`
 }
 
 type ExColumn struct {
-	Month     int        `json:"month"`
-	Brand     string     `json:"brand"`
-	Value     float32    `json:"value"`
+	Month int     `json:"month"`
+	Brand string  `json:"brand"`
+	Value float32 `json:"value"`
+}
+
+type ProfitCompare struct {
+	ThisMonth float32 `json:"this_month"`
+	PreMonth  float32 `json:"pre_month"`
+	Up        bool    `json:"up"`
 }
 
 type ProductSale struct {
-	Product string   `json:"product"`
-	Value   float32  `json:"value"`
+	Product string  `json:"product"`
+	Value   float32 `json:"value"`
 }
 
 func GetPayableDB() *gorm.DB {
@@ -135,4 +141,39 @@ func GetProductSale() (error, []ProductSale, bool) {
 		return msg.GetFail, ps, false
 	}
 	return msg.GetSuccess, ps, true
+}
+
+func GetProfit() (error, ProfitCompare, bool) {
+	var pc ProfitCompare
+	pc.Up = false
+	month := time.Now().Month()
+	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
+	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.profit) as this_month").Joins(j1).Where("bill_headers.stock_type = ? and DATE_FORMAT(bill_headers.created_at,'%m') = ?", "出库单", month).Scan(&pc).Error; err != nil {
+		return msg.GetFail, pc, false
+	}
+	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.profit) as pre_month").Joins(j1).Where("bill_headers.stock_type = ? and DATE_FORMAT(bill_headers.created_at,'%m') = ?", "出库单", month-1).Scan(&pc).Error; err != nil {
+		return msg.GetFail, pc, false
+	}
+	if pc.ThisMonth > pc.PreMonth {
+		pc.Up = true
+	}
+	return msg.GetSuccess, pc, true
+}
+
+func GetTotal() (error, float32, bool) {
+	var total float32
+	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
+	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.total)").Joins(j1).Where("bill_headers.stock_type = ?", "出库单").Scan(&total).Error; err != nil {
+		return msg.GetFail, 0, false
+	}
+	return msg.GetSuccess, total, true
+}
+
+func GetCost() (error, float32, bool) {
+	var total float32
+	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
+	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.total)").Joins(j1).Where("bill_headers.stock_type = ?", "入库单").Scan(&total).Error; err != nil {
+		return msg.GetFail, 0, false
+	}
+	return msg.GetSuccess, total, true
 }

@@ -85,6 +85,9 @@ func InitRouter() {
 		baseRouter.GET("payable-pie/", controller.CGetPayPie)
 		baseRouter.GET("payable-column/", controller.CGetExColumn)
 		baseRouter.GET("product-sale/", controller.CGetProductSale)
+		baseRouter.GET("profit-compare/", controller.CGetProfit)
+		baseRouter.GET("sum-total/", controller.CGetTotal)
+		baseRouter.GET("sum-cost/", controller.CGetCost)
 	}
 	srv := &http.Server{
 		Addr:    ":8080",

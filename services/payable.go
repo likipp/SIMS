@@ -26,3 +26,18 @@ func SGetProductSale() (error, []models.ProductSale, bool) {
 	err, data, success := models.GetProductSale()
 	return err, data, success
 }
+
+func SGetProfit() (error, models.ProfitCompare, bool) {
+	err, data, success := models.GetProfit()
+	return err, data, success
+}
+
+func SGetTotal() (error, float32, bool) {
+	err, data, success := models.GetTotal()
+	return err, data, success
+}
+
+func SGetCost() (error, float32, bool) {
+	err, data, success := models.GetCost()
+	return err, data, success
+}
