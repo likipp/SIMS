@@ -34,6 +34,17 @@ type PayPie struct {
 	Value float32      `json:"value"`
 }
 
+type ExColumn struct {
+	Month     int        `json:"month"`
+	Brand     string     `json:"brand"`
+	Value     float32    `json:"value"`
+}
+
+type ProductSale struct {
+	Product string   `json:"product"`
+	Value   float32  `json:"value"`
+}
+
 func GetPayableDB() *gorm.DB {
 	return entity.GetDBWithModel(global.GDB, new(Payable))
 }
@@ -102,4 +113,26 @@ func GetPayPie() (error, []PayPie, bool) {
 		return msg.GetFail, payPie, false
 	}
 	return msg.GetSuccess, payPie, true
+}
+
+func GetExColumn() (error, []ExColumn, bool) {
+	var ec []ExColumn
+	var s = "DATE_FORMAT(bill_headers.created_at,'%m') as month, brands.name as brand, sum(bill_entries.total) as value"
+	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
+	var j2 = "join products on bill_entries.p_number = products.p_number"
+	var j3 = "join brands on products.brand = brands.id"
+	if err := global.GDB.Table("bill_headers").Select(s).Joins(j1).Joins(j2).Joins(j3).Where("bill_headers.stock_type = ?", "出库单").Group("DATE_FORMAT(bill_headers.created_at,'%m')").Group("products.brand").Order("DATE_FORMAT(bill_headers.created_at,'%m')").Scan(&ec).Error; err != nil {
+		return msg.GetFail, ec, false
+	}
+	return msg.GetSuccess, ec, true
+}
+
+func GetProductSale() (error, []ProductSale, bool) {
+	var ps []ProductSale
+	var s = "bill_entries.p_name as product, sum(bill_entries.total) as value"
+	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
+	if err := global.GDB.Table("bill_headers").Select(s).Joins(j1).Where("bill_headers.stock_type = ?", "出库单").Group("bill_entries.p_number").Order("sum(bill_entries.total) desc").Limit(5).Scan(&ps).Error; err != nil {
+		return msg.GetFail, ps, false
+	}
+	return msg.GetSuccess, ps, true
 }

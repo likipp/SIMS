@@ -83,6 +83,8 @@ func InitRouter() {
 		baseRouter.POST("payable/", controller.CCreatePayBill)
 		baseRouter.GET("payable/", controller.CGetPayList)
 		baseRouter.GET("payable-pie/", controller.CGetPayPie)
+		baseRouter.GET("payable-column/", controller.CGetExColumn)
+		baseRouter.GET("product-sale/", controller.CGetProductSale)
 	}
 	srv := &http.Server{
 		Addr:    ":8080",

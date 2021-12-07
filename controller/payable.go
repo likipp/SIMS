@@ -42,3 +42,21 @@ func CGetPayPie(c *gin.Context) {
 	}
 	msg.Result(nil, err, 1, false, c)
 }
+
+func CGetExColumn(c *gin.Context) {
+	err, data, success := services.SGetExColumn()
+	if success {
+		msg.Result(data, err, 0, true, c)
+		return
+	}
+	msg.Result(nil, err, 1, false, c)
+}
+
+func CGetProductSale(c *gin.Context)  {
+	err, data, success := services.SGetProductSale()
+	if success {
+		msg.Result(data, err, 0, true, c)
+		return
+	}
+	msg.Result(nil, err, 1, false, c)
+}

@@ -16,3 +16,13 @@ func SGetPayPie() (error, []models.PayPie, bool) {
 	err, data, success := models.GetPayPie()
 	return err, data, success
 }
+
+func SGetExColumn() (error, []models.ExColumn, bool) {
+	err, data, success := models.GetExColumn()
+	return err, data, success
+}
+
+func SGetProductSale() (error, []models.ProductSale, bool) {
+	err, data, success := models.GetProductSale()
+	return err, data, success
+}
