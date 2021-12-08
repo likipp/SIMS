@@ -76,7 +76,7 @@ func CGetTotal(c *gin.Context) {
 		msg.Result(data, err, 0, true, c)
 		return
 	}
-	msg.Result(nil, err, 1, false, c)
+	msg.Result(0, err, 1, false, c)
 }
 
 func CGetCost(c *gin.Context) {
@@ -85,5 +85,5 @@ func CGetCost(c *gin.Context) {
 		msg.Result(data, err, 0, true, c)
 		return
 	}
-	msg.Result(nil, err, 1, false, c)
+	msg.Result(0, err, 1, false, c)
 }

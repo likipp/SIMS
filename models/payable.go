@@ -123,7 +123,7 @@ func GetPayPie() (error, []PayPie, bool) {
 
 func GetExColumn() (error, []ExColumn, bool) {
 	var ec []ExColumn
-	var s = "DATE_FORMAT(bill_headers.created_at,'%m') as month, brands.name as brand, sum(bill_entries.total) as value"
+	var s = "DATE_FORMAT(bill_headers.created_at,'%m') as month, brands.name as brand, IFNULL(sum(bill_entries.total), 0) as value"
 	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
 	var j2 = "join products on bill_entries.p_number = products.p_number"
 	var j3 = "join brands on products.brand = brands.id"
@@ -135,7 +135,7 @@ func GetExColumn() (error, []ExColumn, bool) {
 
 func GetProductSale() (error, []ProductSale, bool) {
 	var ps []ProductSale
-	var s = "bill_entries.p_name as product, sum(bill_entries.total) as value"
+	var s = "bill_entries.p_name as product, IFNULL(sum(bill_entries.total), 0) as value"
 	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
 	if err := global.GDB.Table("bill_headers").Select(s).Joins(j1).Where("bill_headers.stock_type = ?", "出库单").Group("bill_entries.p_number").Order("sum(bill_entries.total) desc").Limit(5).Scan(&ps).Error; err != nil {
 		return msg.GetFail, ps, false
@@ -148,10 +148,10 @@ func GetProfit() (error, ProfitCompare, bool) {
 	pc.Up = false
 	month := time.Now().Month()
 	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
-	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.profit) as this_month").Joins(j1).Where("bill_headers.stock_type = ? and DATE_FORMAT(bill_headers.created_at,'%m') = ?", "出库单", month).Scan(&pc).Error; err != nil {
+	if err := global.GDB.Table("bill_headers").Select("IFNULL(sum(bill_entries.profit), 0) as this_month").Joins(j1).Where("bill_headers.stock_type = ? and DATE_FORMAT(bill_headers.created_at,'%m') = ?", "出库单", month).Scan(&pc).Error; err != nil {
 		return msg.GetFail, pc, false
 	}
-	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.profit) as pre_month").Joins(j1).Where("bill_headers.stock_type = ? and DATE_FORMAT(bill_headers.created_at,'%m') = ?", "出库单", month-1).Scan(&pc).Error; err != nil {
+	if err := global.GDB.Table("bill_headers").Select("IFNULL(sum(bill_entries.profit), 0) as pre_month").Joins(j1).Where("bill_headers.stock_type = ? and DATE_FORMAT(bill_headers.created_at,'%m') = ?", "出库单", month-1).Scan(&pc).Error; err != nil {
 		return msg.GetFail, pc, false
 	}
 	if pc.ThisMonth > pc.PreMonth {
@@ -163,7 +163,7 @@ func GetProfit() (error, ProfitCompare, bool) {
 func GetTotal() (error, float32, bool) {
 	var total float32
 	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
-	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.total)").Joins(j1).Where("bill_headers.stock_type = ?", "出库单").Scan(&total).Error; err != nil {
+	if err := global.GDB.Table("bill_headers").Select("IFNULL(sum(bill_entries.total), 0)").Joins(j1).Where("bill_headers.stock_type = ?", "出库单").Scan(&total).Error; err != nil {
 		return msg.GetFail, 0, false
 	}
 	return msg.GetSuccess, total, true
@@ -172,7 +172,7 @@ func GetTotal() (error, float32, bool) {
 func GetCost() (error, float32, bool) {
 	var total float32
 	var j1 = "join bill_entries on bill_headers.id = bill_entries.header_id"
-	if err := global.GDB.Table("bill_headers").Select("sum(bill_entries.total)").Joins(j1).Where("bill_headers.stock_type = ?", "入库单").Scan(&total).Error; err != nil {
+	if err := global.GDB.Table("bill_headers").Select("IFNULL(sum(bill_entries.total), 0)").Joins(j1).Where("bill_headers.stock_type = ?", "入库单").Scan(&total).Error; err != nil {
 		return msg.GetFail, 0, false
 	}
 	return msg.GetSuccess, total, true
