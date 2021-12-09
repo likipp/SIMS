@@ -100,6 +100,7 @@ func CUploadPicture(c *gin.Context) {
 		msg.Result(nil, msg.PictureUploadFailed, 1, false, c)
 		return
 	}
+	msg.Result(nil, msg.PictureUploadSuccess, 0, true, c)
 }
 
 func CGenerateProductNumber(c *gin.Context) {

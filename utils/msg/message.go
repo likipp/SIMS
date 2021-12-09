@@ -34,6 +34,7 @@ var (
 	PaginationFailed     = errors.New("分页失败")
 	AmountSuccess        = errors.New("货款已结清")
 	PictureUploadFailed  = errors.New("图片上传失败")
+	PictureUploadSuccess  = errors.New("图片上传成功")
 	PictureExtFailed     = errors.New("上传失败!只允许png,jpg,gif,jpeg文件")
 	Exists               = errors.New("数据已经存在")
 )
