@@ -13,15 +13,17 @@ import (
 
 type Products struct {
 	BaseModel
-	PName     string  `json:"p_name" gorm:"comment:'产品名称'"`
-	PNumber   string  `gorm:"index not null; comment:'产品编号'" json:"p_number"`
-	Spec      string  `json:"p_spec" gorm:"comment:'规格型号'"`
-	Price     float32 `json:"p_price" gorm:"comment:'单价'"`
-	Brand     int     `json:"brand" gorm:"comment:'品牌'"`
-	Unit      int     `json:"unit" gorm:"comment:'单位'"`
-	WareHouse int     `json:"ware_house" gorm:"comment:'默认仓库'"`
-	Mark      string  `json:"mark" gorm:"comment:'备注'"`
-	Picture   string  `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
+	PName   string `json:"p_name" gorm:"comment:'产品名称'"`
+	PNumber string `gorm:"index not null; comment:'产品编号'" json:"p_number"`
+	Spec    string `json:"p_spec" gorm:"comment:'规格型号'"`
+	//Price     float32 `json:"p_price" gorm:"comment:'单价'"`
+	PurchasePrice float32 `json:"purchase_price" gorm:"comment:'采购单价'"`
+	SalePrice     float32 `json:"sale_price" gorm:"comment:'销售单价'"`
+	Brand         int     `json:"brand" gorm:"comment:'品牌'"`
+	Unit          int     `json:"unit" gorm:"comment:'单位'"`
+	WareHouse     int     `json:"ware_house" gorm:"comment:'默认仓库'"`
+	Mark          string  `json:"mark" gorm:"comment:'备注'"`
+	Picture       string  `json:"picture" gorm:"default:'/favicon.ico'; comment:'图片'"`
 }
 
 type ProductQueryParams struct {
@@ -34,24 +36,26 @@ type ProductQueryParams struct {
 
 type ProductQueryResult struct {
 	BaseModel
-	PName     string  `json:"p_name"`
-	PNumber   string  `json:"p_number"`
-	Spec      string  `json:"p_spec"`
-	Price     float32 `json:"p_price"`
-	Brand     int     `json:"brand"`
-	Unit      int     `json:"unit"`
-	WareHouse int     `json:"ware_house"`
-	Mark      string  `json:"mark"`
-	Picture   string
+	PName         string  `json:"p_name"`
+	PNumber       string  `json:"p_number"`
+	Spec          string  `json:"p_spec"`
+	PurchasePrice float32 `json:"purchase_price"`
+	SalePrice     float32 `json:"sale_price"`
+	Brand         int     `json:"brand"`
+	Unit          int     `json:"unit"`
+	WareHouse     int     `json:"ware_house"`
+	Mark          string  `json:"mark"`
+	Picture       string  `json:"picture"`
 }
 
 type ProductsSelect struct {
-	Value     string  `json:"value"`
-	Label     string  `json:"label"`
-	Key       string  `json:"key"`
-	Price     float32 `json:"price"`
-	PName     string  `json:"p_name"`
-	WareHouse int     `json:"ware_house"`
+	Value         string  `json:"value"`
+	Label         string  `json:"label"`
+	Key           string  `json:"key"`
+	PurchasePrice float32 `json:"purchase_price"`
+	SalePrice     float32 `json:"sale_price"`
+	PName         string  `json:"p_name"`
+	WareHouse     int     `json:"ware_house"`
 }
 
 func (p *Products) Validate() error {
@@ -101,7 +105,8 @@ func GetProductsSelectList(param string) (err error, list []ProductsSelect, succ
 		p.Label = pro.PNumber + pro.PName
 		p.Key = pro.PName
 		p.PName = pro.PName
-		p.Price = pro.Price
+		p.PurchasePrice = pro.PurchasePrice
+		p.SalePrice = pro.SalePrice
 		p.WareHouse = pro.WareHouse
 		ps = append(ps, p)
 	}

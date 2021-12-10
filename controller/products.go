@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"SIMS/global"
 	"SIMS/internal/gins"
 	"SIMS/models"
 	"SIMS/services"
@@ -85,17 +86,18 @@ func CUpdateProduct(c *gin.Context) {
 }
 
 func CUploadPicture(c *gin.Context) {
+	data := make(map[string]string)
 	file, err := c.FormFile("file")
 	if err != nil {
 		msg.Result(nil, msg.PictureUploadFailed, 1, false, c)
 		return
 	}
 	fileExt := strings.ToLower(path.Ext(file.Filename))
-	if fileExt != ".png" && fileExt != ".jgp" && fileExt != ".gif" && fileExt != ".jpeg" {
+	if fileExt != ".png" && fileExt != ".jpg" && fileExt != ".gif" && fileExt != ".jpeg" {
 		msg.Result(nil, msg.PictureExtFailed, 1, false, c)
 		return
 	}
-	paths := fmt.Sprintf("./static/%s/", "花喜")
+	paths := fmt.Sprintf("%s/%s/", global.ImagePath, "花喜")
 	if _, err = os.Stat(paths); err != nil {
 		fmt.Println("err", err)
 		err = os.MkdirAll(paths, 0711)
@@ -107,14 +109,16 @@ func CUploadPicture(c *gin.Context) {
 		fmt.Println("文件夹已存在")
 	}
 	filePath := fmt.Sprintf("%s%s", paths, file.Filename)
-	//filename := filepath.Base(file.Filename)
-	fmt.Println(filePath)
+	filePathFS := fmt.Sprintf("%s%s", fmt.Sprintf("%s/%s/", global.ImageFS, "花喜"), file.Filename)
+	fileUrlPath := fmt.Sprintf("%s/%s/%s", "http:/", c.Request.Host, filePathFS)
 	err = c.SaveUploadedFile(file, filePath)
 	if err != nil {
 		msg.Result(nil, msg.PictureUploadFailed, 1, false, c)
 		return
 	}
-	msg.Result(nil, msg.PictureUploadSuccess, 0, true, c)
+	data["image_url"] = fileUrlPath
+	data["image_path"] = filePath
+	msg.Result(data, msg.PictureUploadSuccess, 0, true, c)
 }
 
 func CGenerateProductNumber(c *gin.Context) {

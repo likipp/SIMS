@@ -16,7 +16,7 @@ import (
 
 func InitRouter() {
 	r := gin.Default()
-	r.StaticFS("/images", http.Dir("./static/images"))
+	r.StaticFS("/images", http.Dir("./static"))
 	r.StaticFile("/favicon.ico", "./static/images/default.jpg")
 	//r.Static("/", "./static")
 	r.POST("/api/v1/base/login/", controller.Login)

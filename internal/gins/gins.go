@@ -24,6 +24,7 @@ func Parse(c *gin.Context, obj interface{}) error {
 
 func ParseJSON(c *gin.Context, obj interface{}) error {
 	if err := c.ShouldBindJSON(&obj); err != nil {
+		fmt.Println(err, "错误消息")
 		return msg.QueryParamsFail
 	}
 	return nil
