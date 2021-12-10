@@ -18,6 +18,7 @@ func InitRouter() {
 	r := gin.Default()
 	r.StaticFS("/images", http.Dir("./static/images"))
 	r.StaticFile("/favicon.ico", "./static/images/default.jpg")
+	//r.Static("/", "./static")
 	r.POST("/api/v1/base/login/", controller.Login)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Use(middleware.JWTAuth()).Use(middleware.CorsMiddlewares())
@@ -58,6 +59,10 @@ func InitRouter() {
 
 		// 产品路由
 		baseRouter.POST("product/", controller.CCreateProduct)
+		baseRouter.OPTIONS("image/", func(c *gin.Context) {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		})
 		baseRouter.POST("image/", controller.CUploadPicture)
 		baseRouter.GET("product/", controller.CGetProductsList)
 		baseRouter.GET("product-select/", controller.CGetProductsSelectList)

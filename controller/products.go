@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"os"
 	"path"
 	"strings"
 )
@@ -94,7 +95,20 @@ func CUploadPicture(c *gin.Context) {
 		msg.Result(nil, msg.PictureExtFailed, 1, false, c)
 		return
 	}
-	filePath := fmt.Sprintf("%s%s", file.Filename, fileExt)
+	paths := fmt.Sprintf("./static/%s/", "花喜")
+	if _, err = os.Stat(paths); err != nil {
+		fmt.Println("err", err)
+		err = os.MkdirAll(paths, 0711)
+		if err != nil {
+			msg.Result(nil, msg.CreateFolderFailed, 1, false, c)
+			return
+		}
+	} else {
+		fmt.Println("文件夹已存在")
+	}
+	filePath := fmt.Sprintf("%s%s", paths, file.Filename)
+	//filename := filepath.Base(file.Filename)
+	fmt.Println(filePath)
 	err = c.SaveUploadedFile(file, filePath)
 	if err != nil {
 		msg.Result(nil, msg.PictureUploadFailed, 1, false, c)
