@@ -15,6 +15,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 func CCreateProduct(c *gin.Context) {
@@ -87,19 +88,21 @@ func CUpdateProduct(c *gin.Context) {
 
 func CUploadPicture(c *gin.Context) {
 	data := make(map[string]string)
+	timeNow := time.Now().Format("20060102150405")
 	file, err := c.FormFile("file")
 	if err != nil {
 		msg.Result(nil, msg.PictureUploadFailed, 1, false, c)
 		return
 	}
+	brand := c.PostForm("brand")
 	fileExt := strings.ToLower(path.Ext(file.Filename))
+	filName := fmt.Sprintf("%s%s", timeNow, fileExt)
 	if fileExt != ".png" && fileExt != ".jpg" && fileExt != ".gif" && fileExt != ".jpeg" {
 		msg.Result(nil, msg.PictureExtFailed, 1, false, c)
 		return
 	}
-	paths := fmt.Sprintf("%s/%s/", global.ImagePath, "花喜")
+	paths := fmt.Sprintf("%s/%s/", global.ImagePath, brand)
 	if _, err = os.Stat(paths); err != nil {
-		fmt.Println("err", err)
 		err = os.MkdirAll(paths, 0711)
 		if err != nil {
 			msg.Result(nil, msg.CreateFolderFailed, 1, false, c)
@@ -108,8 +111,8 @@ func CUploadPicture(c *gin.Context) {
 	} else {
 		fmt.Println("文件夹已存在")
 	}
-	filePath := fmt.Sprintf("%s%s", paths, file.Filename)
-	filePathFS := fmt.Sprintf("%s%s", fmt.Sprintf("%s/%s/", global.ImageFS, "花喜"), file.Filename)
+	filePath := fmt.Sprintf("%s%s", paths, filName)
+	filePathFS := fmt.Sprintf("%s%s", fmt.Sprintf("%s/%s/", global.ImageFS, brand), filName)
 	fileUrlPath := fmt.Sprintf("%s/%s/%s", "http:/", c.Request.Host, filePathFS)
 	err = c.SaveUploadedFile(file, filePath)
 	if err != nil {
