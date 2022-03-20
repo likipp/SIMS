@@ -8,29 +8,32 @@ import (
 	"SIMS/utils/msg"
 	"fmt"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Custom struct {
 	BaseModel
-	CName    string `json:"c_name"    gorm:"comment:'客户名称'"`
-	CNumber  string `json:"c_number"  gorm:"comment:'顾客编码'"`
-	Phone    string `json:"phone"     gorm:"comment:'手机号码'"`
-	Address  string `json:"address"   gorm:"comment:'收件件地址'"`
-	Discount int    `json:"discount"  gorm:"comment:'折扣'"`
-	Level    int    `json:"level"     gorm:"comment:'客户等级'"`
-	Mark     string `json:"mark"      gorm:"comment:'备注'"`
+	CName       string     `json:"c_name"    gorm:"comment:'客户名称'"`
+	CNumber     string     `json:"c_number"  gorm:"comment:'顾客编码'"`
+	Phone       string     `json:"phone"     gorm:"comment:'手机号码'"`
+	Address     string     `json:"address"   gorm:"comment:'收件件地址'"`
+	Discount    int        `json:"discount"  gorm:"comment:'折扣'"`
+	Level       int        `json:"level"     gorm:"comment:'客户等级'"`
+	Mark        string     `json:"mark"      gorm:"comment:'备注'"`
+	LastBuyTime *time.Time `gorm:"last_buy_time" json:"lastBuyTime"`
 }
 
 type CustomWithLevel struct {
 	BaseModel
-	CName     string `json:"c_name"`
-	CNumber   string `json:"c_number"`
-	Phone     string `json:"phone"`
-	Address   string `json:"address"`
-	Discount  int    `json:"discount"`
-	LevelID   int    `json:"level_id"`
-	LevelName string `json:"level_name"`
-	Mark      string `json:"mark"`
+	CName       string     `json:"c_name"`
+	CNumber     string     `json:"c_number"`
+	Phone       string     `json:"phone"`
+	Address     string     `json:"address"`
+	Discount    int        `json:"discount"`
+	LevelID     int        `json:"level_id"`
+	LevelName   string     `json:"level_name"`
+	Mark        string     `json:"mark"`
+	LastBuyTime *time.Time `json:"lastBuyTime"`
 }
 
 type CustomQueryParams struct {
@@ -65,7 +68,7 @@ func (c *Custom) CreateCustom() (err error, success bool) {
 }
 
 func (c *Custom) GetList(params CustomQueryParams) (success bool, err error, List []CustomWithLevel, total int64) {
-	var selectData = "customs.id, customs.c_name, customs.c_number, customs.phone, customs.address, customs.discount, customs.created_at, customs.create_by, customs.mark, custom_levels.discount, custom_levels.id as level_id,  custom_levels.name as level_name"
+	var selectData = "customs.id, customs.c_name, customs.last_buy_time, customs.c_number, customs.phone, customs.address, customs.discount, customs.created_at, customs.create_by, customs.mark, custom_levels.discount, custom_levels.id as level_id,  custom_levels.name as level_name"
 	var joinData = "join custom_levels on customs.level = custom_levels.id"
 	db := GetCustomDB()
 

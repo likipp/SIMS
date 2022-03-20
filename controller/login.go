@@ -26,8 +26,8 @@ type User struct {
 }
 
 type LoginResult struct {
-	Status string `json:"status"`
-	Success bool `json:"success"`
+	Status  string `json:"status"`
+	Success bool   `json:"success"`
 	Type    string `json:"type"`
 }
 
@@ -57,8 +57,7 @@ func Login(c *gin.Context) {
 	ls.Status = "error"
 	ls.Success = false
 	ls.Type = "account"
-	//msg.Result(ls, err, 1, false, c)
-	c.JSONP(http.StatusOK, ls)
+	msg.Result(nil, err, 1, false, c)
 	return
 }
 
@@ -84,7 +83,7 @@ func GetTokenAndSession(c *gin.Context, user User) {
 	}
 	id, _ := strconv.ParseUint(user.UserID, 0, 64)
 	clams := models.CustomClaims{
-		ID:   uint(id),
+		ID:         uint(id),
 		NickName:   user.NickName,
 		Username:   user.Name,
 		BufferTime: 60 * 60 * 24, // 缓冲时间1天 缓冲时间内会获得新的token刷新令牌 此时一个用户会存在两个有效令牌 但是前端只留一个 另一个会丢失

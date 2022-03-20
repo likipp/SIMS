@@ -34,7 +34,7 @@ func SGetExStockList(params models.ExListQueryParams) (err error, list []models.
 	return err, list, success
 }
 
-func SGetInStockList(params models.InStockQueryParams) (err error, list []models.InStock, success bool) {
+func SGetInStockList(params models.InStockQueryParams) (err error, list []models.InStockWithChild, success bool) {
 	err, list, success = models.GetInStockList(params)
 	return err, list, success
 }

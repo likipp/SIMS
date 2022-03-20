@@ -96,6 +96,11 @@ func (sh *BillHeader) BillLog(sb []BillEntry) (err error, success bool) {
 		tx.Rollback()
 		return msg.CreatedFail, false
 	}
+	err = tx.Model(&Custom{}).Where("id = ?", sh.Custom).Update("last_buy_time", sh.CreatedAt).Error
+	if err != nil {
+		tx.Rollback()
+		return msg.CreatedFail, false
+	}
 	tx.Commit()
 	return msg.CreatedSuccess, true
 }

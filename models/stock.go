@@ -55,6 +55,24 @@ type InStock struct {
 	RemainAmount float32    `json:"remain_amount"`
 }
 
+type InStockWithChild struct {
+	ID           int        `json:"id"`
+	Number       string     `json:"number"`
+	Status       int        `json:"status"`
+	CreatedAt    *time.Time `json:"created_at"`
+	PayMethod    string     `json:"pay_method"`
+	BillAmount   float32    `json:"bill_amount"`
+	RemainAmount float32    `json:"remain_amount"`
+	Child        []InChild  `json:"child"`
+}
+
+type InChild struct {
+	PNumber   string  `json:"p_number" gorm:"index"`
+	PName     string  `json:"p_name" gorm:"index"`
+	InQTY     string  `json:"in_qty"`
+	UnitPrice float32 `json:"unit_price"`
+}
+
 type InExStock struct {
 	ID         int        `json:"id"`
 	Number     string     `json:"number"`
@@ -266,13 +284,15 @@ func GetExStockList(params ExListQueryParams) (error, []ExStock, bool) {
 	return msg.GetSuccess, el, true
 }
 
-func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
+func GetInStockList(params InStockQueryParams) (error, []InStockWithChild, bool) {
 	var el []InStock
+	var isc []InStockWithChild
+	var hash = make(map[string]bool)
 	var selectColumns = "bill_headers.id, bill_headers.number, bill_headers.created_at, bill_headers.pay_method, bill_entries.p_number, bill_entries.p_name, bill_entries.in_qty, bill_entries.unit_price, bill_headers.bill_amount, bill_headers.remain_amount, bill_headers.status"
 	db := global.GDB.Select(selectColumns).Model(&BillHeader{}).Joins("left join bill_entries on bill_entries.header_id = bill_headers.id").Where("bill_headers.stock_type = ?", "入库单")
 	err := db.Error
 	if err != nil {
-		return msg.GetFail, el, false
+		return msg.GetFail, isc, false
 	}
 	if v := params.PNumber; v != "" {
 		if err = db.Where("p_number like ?", fmt.Sprintf("%s%s%s", "%", v, "%")).Error; err != nil {
@@ -305,7 +325,37 @@ func GetInStockList(params InStockQueryParams) (error, []InStock, bool) {
 	if err = db.Scopes(schema.QueryOrder(params.Sorter)).Find(&el).Error; err != nil {
 		return msg.GetFail, nil, false
 	}
-	return msg.GetSuccess, el, true
+
+	for _, stock := range el {
+		if !hash[stock.Number] {
+			hash[stock.Number] = true
+			i := InStockWithChild{
+				ID:           stock.ID,
+				Number:       stock.Number,
+				Status:       stock.Status,
+				CreatedAt:    stock.CreatedAt,
+				PayMethod:    stock.PayMethod,
+				BillAmount:   stock.BillAmount,
+				RemainAmount: stock.RemainAmount,
+				Child:        nil,
+			}
+			isc = append(isc, i)
+		}
+	}
+	for i := 0; i < len(isc); i++ {
+		for y := 0; y < len(el); y++ {
+			if isc[i].Number == el[y].Number {
+				isc[i].Child = append(isc[i].Child, InChild{
+					PNumber:   el[y].PNumber,
+					PName:     el[y].PName,
+					InQTY:     el[y].InQTY,
+					UnitPrice: el[y].UnitPrice,
+				})
+			}
+		}
+	}
+	fmt.Println(isc, "入库列表")
+	return msg.GetSuccess, isc, true
 }
 
 func GetInExStockList(params InExStockQueryParams) (error, []InExStock, bool) {
